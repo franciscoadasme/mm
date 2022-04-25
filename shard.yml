@@ -1,0 +1,10 @@
+name: mm
+version: 0.1.0
+
+authors:
+  - Francisco Adasme <francisco.adasme@gmail.com>
+  - Mauricio Bedoya <maurobedoyat@gmail.com>
+
+crystal: 1.4
+
+license: MIT
