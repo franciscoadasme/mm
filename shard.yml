@@ -10,6 +10,8 @@ crystal: 1.4
 dependencies:
   chem:
     github: franciscoadasme/chem.cr
+  views:
+    github: franciscoadasme/views
 
 development_dependencies:
   ameba:
