@@ -42,7 +42,7 @@ module MM::CHARMM
               atoms << ResidueType::AtomRecord.new(atom_name, type_name, partial_charge)
             when "DELETE"
               next unless tokens[1].upcase == "ATOM"
-              atom_name = tokens[2].upcase
+              delete_atoms << tokens[2].upcase
             when "BOND", "DOUBLE"
               order = inner_key == "DOUBLE" ? 2 : 1
               tokens[1..].each_slice(2, reuse: true) do |(lhs, rhs)|

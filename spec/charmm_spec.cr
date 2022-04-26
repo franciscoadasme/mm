@@ -17,6 +17,13 @@ describe MM::CHARMM do
       restype.first_patch.should eq "NTER"
       restype.last_patch.should eq "CTER"
       restype.partial_charge.should eq 0
+
+      patch = params.patches["DISU"]?.should_not be_nil
+      patch.partial_charge.should be_close -0.24, 1e-15
+      patch.atoms.size.should eq 4
+      patch.delete_atoms.should eq ["1HG1", "2HG1"]
+      patch.bonds.size.should eq 1
+      patch.bonds.count(&.order.==(2)).should eq 0
     end
   end
 end
