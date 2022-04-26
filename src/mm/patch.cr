@@ -9,11 +9,11 @@ class MM::Patch
   )
   end
 
-  def atoms : Indexable(AtomRecord)
+  def atoms : Indexable(ResidueType::AtomRecord)
     ArrayView.new @atoms
   end
 
-  def bonds : Indexable(BondRecord)
+  def bonds : Indexable(ResidueType::BondRecord)
     ArrayView.new @bonds
   end
 
