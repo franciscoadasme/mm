@@ -7,6 +7,10 @@ authors:
 
 crystal: 1.4
 
+dependencies:
+  chem:
+    github: franciscoadasme/chem.cr
+
 development_dependencies:
   ameba:
     github: crystal-ameba/ameba
