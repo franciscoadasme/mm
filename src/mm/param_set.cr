@@ -7,6 +7,26 @@ class MM::ParameterSet
   getter residues = {} of String => ResidueType
   getter patches = {} of String => Patch
 
+  def self.from_charmm(*paths : Path | String) : self
+    params = new
+    paths.each do |path|
+      case (path = Path.new(path)).extension
+      when ".rtf", ".top"
+        CHARMM.load_topology(params, path)
+      when ".inp"
+        case path.basename
+        when .includes?("top")
+          CHARMM.load_topology(params, path)
+        else
+          raise ArgumentError.new("Unrecognized file type: #{path}")
+        end
+      else
+        raise ArgumentError.new("Unrecognized file type: #{path}")
+      end
+    end
+    params
+  end
+
   def <<(atom : AtomType) : self
     @atom_types[atom.name] = atom
     self
