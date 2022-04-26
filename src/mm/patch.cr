@@ -20,4 +20,8 @@ class MM::Patch
   def delete_atoms : Indexable(String)
     ArrayView.new @delete_atoms
   end
+
+  def partial_charge : Float64
+    @atoms.sum &.partial_charge
+  end
 end
