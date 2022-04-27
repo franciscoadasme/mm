@@ -1,11 +1,11 @@
 class MM::ParameterSet
-  getter atom_types = {} of String => AtomType
-  getter bond_types = {} of BondType::Key => BondType
-  getter angle_types = {} of AngleType::Key => AngleType
-  getter dihedral_types = {} of DihedralType::Key => Array(DihedralType)
-  getter improper_types = {} of ImproperType::Key => ImproperType
-  getter residues = {} of String => ResidueType
-  getter patches = {} of String => Patch
+  @angle_types = {} of AngleType::Key => AngleType
+  @atom_types = {} of String => AtomType
+  @bond_types = {} of BondType::Key => BondType
+  @dihedral_types = {} of DihedralType::Key => Array(DihedralType)
+  @improper_types = {} of ImproperType::Key => ImproperType
+  @patches = {} of String => Patch
+  @residues = {} of String => ResidueType
 
   def self.from_charmm(*paths : Path | String) : self
     params = new
@@ -60,5 +60,33 @@ class MM::ParameterSet
   def <<(patch : Patch) : self
     @patches[patch.name] = patch
     self
+  end
+
+  def angle_types : HashView(AngleType::Key, AngleType)
+    HashView.new @angle_types
+  end
+
+  def atom_types : HashView(String, AtomType)
+    HashView.new @atom_types
+  end
+
+  def bond_types : HashView(BondType::Key, BondType)
+    HashView.new @bond_types
+  end
+
+  def dihedral_types : HashView(DihedralType::Key, DihedralType)
+    HashView.new @dihedral_types
+  end
+
+  def improper_types : HashView(ImproperType::Key, ImproperType)
+    HashView.new @improper_types
+  end
+
+  def patches : HashView(String, Patch)
+    HashView.new @patches
+  end
+
+  def residues : HashView(String, ResidueType)
+    HashView.new @residues
   end
 end

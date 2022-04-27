@@ -17,11 +17,11 @@ class MM::ResidueType
   )
   end
 
-  def atoms : Indexable(AtomRecord)
+  def atoms : ArrayView(AtomRecord)
     ArrayView.new @atoms
   end
 
-  def bonds : Indexable(BondRecord)
+  def bonds : ArrayView(BondRecord)
     ArrayView.new @bonds
   end
 
