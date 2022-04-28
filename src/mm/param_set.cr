@@ -35,38 +35,50 @@ class MM::ParameterSet
   end
 
   def <<(atom : AtomType) : self
-    @atom_types[atom.name] = atom
-    self
-  end
-
-  def <<(bond : BondType) : self
-    @bond_types[bond.typenames] = bond
-    self
-  end
-
-  def <<(angle : AngleType) : self
-    @angle_types[angle.typenames] = angle
-    self
-  end
-
-  def <<(dihedral : DihedralType) : self
-    @dihedral_types[dihedral.typenames] = dihedral
-    self
-  end
-
-  def <<(improper : ImproperType) : self
-    @improper_types[improper.typenames] = improper
+    self[atom.name] = atom
     self
   end
 
   def <<(restype : ResidueType) : self
-    @residues[restype.name] = restype
+    self[restype.name] = restype
     self
   end
 
   def <<(patch : Patch) : self
-    @patches[patch.name] = patch
+    self[patch.name] = patch
     self
+  end
+
+  def []=(typenames : BondKey, bond : BondType) : BondType
+    @bonds[typenames] = @bonds[typenames.reverse] = bond
+  end
+
+  def []=(typenames : AngleKey, angle : AngleType) : AngleType
+    @angles[typenames] = @angles[typenames.reverse] = angle
+  end
+
+  def []=(typenames : DihedralKey, dihedral : DihedralType) : DihedralType
+    @dihedrals[typenames] << dihedral
+    if (rtypenames = typenames.reverse) != typenames # avoid duplication
+      @dihedrals[rtypenames] << dihedral
+    end
+    dihedral
+  end
+
+  def []=(typenames : ImproperKey, improper : ImproperType) : ImproperType
+    @impropers[typenames] = @impropers[typenames.reverse] = improper
+  end
+
+  def []=(name : String, atom : AtomType) : AtomType
+    @atoms[name] = atom
+  end
+
+  def []=(name : String, restype : ResidueType) : ResidueType
+    @residues[name] = restype
+  end
+
+  def []=(name : String, patch : Patch) : Patch
+    @patches[name] = patch
   end
 
   def angles : HashView(AngleKey, AngleType)
