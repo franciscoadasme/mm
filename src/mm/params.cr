@@ -1,4 +1,6 @@
 module MM
+  record LennardJones, epsilon : Float64, rmin : Float64, comment : String?
+
   module ParameterType
     getter force_constant : Float64
     getter eq_value : Float64

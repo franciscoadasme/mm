@@ -1,5 +1,3 @@
-record MM::LennardJones, epsilon : Float64, rmin : Float64
-
 class MM::AtomType
   getter comment : String?
   getter element : Chem::Element
