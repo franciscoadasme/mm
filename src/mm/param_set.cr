@@ -1,9 +1,16 @@
 class MM::ParameterSet
-  @angle_types = {} of AngleType::Key => AngleType
-  @atom_types = {} of String => AtomType
-  @bond_types = {} of BondType::Key => BondType
-  @dihedral_types = {} of DihedralType::Key => Array(DihedralType)
-  @improper_types = {} of ImproperType::Key => ImproperType
+  alias BondKey = {String, String}
+  alias AngleKey = {String, String, String}
+  alias DihedralKey = {String?, String, String, String?}
+  alias ImproperKey = {String, String?, String?, String}
+
+  @angles = {} of AngleKey => AngleType
+  @atoms = {} of String => AtomType
+  @bonds = {} of BondKey => BondType
+  @dihedrals = Hash(DihedralKey, Array(DihedralType)).new do |hash, key|
+    hash[key] = [] of DihedralType
+  end
+  @impropers = {} of ImproperKey => ImproperType
   @patches = {} of String => Patch
   @residues = {} of String => ResidueType
 
@@ -62,24 +69,24 @@ class MM::ParameterSet
     self
   end
 
-  def angle_types : HashView(AngleType::Key, AngleType)
-    HashView.new @angle_types
+  def angles : HashView(AngleKey, AngleType)
+    HashView.new @angles
   end
 
-  def atom_types : HashView(String, AtomType)
-    HashView.new @atom_types
+  def atoms : HashView(String, AtomType)
+    HashView.new @atoms
   end
 
-  def bond_types : HashView(BondType::Key, BondType)
-    HashView.new @bond_types
+  def bonds : HashView(BondKey, BondType)
+    HashView.new @bonds
   end
 
-  def dihedral_types : HashView(DihedralType::Key, DihedralType)
-    HashView.new @dihedral_types
+  def dihedrals : HashView(DihedralKey, Array(DihedralType))
+    HashView.new @dihedrals
   end
 
-  def improper_types : HashView(ImproperType::Key, ImproperType)
-    HashView.new @improper_types
+  def impropers : HashView(ImproperKey, ImproperType)
+    HashView.new @impropers
   end
 
   def patches : HashView(String, Patch)

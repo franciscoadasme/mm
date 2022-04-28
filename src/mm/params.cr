@@ -8,14 +8,12 @@ module MM
     force_constant : Float64,
     eq_value : Float64 do
     include ParameterType
-    alias Key = {String, String}
   end
 
   record AngleType,
     force_constant : Float64,
     eq_value : Float64 do
     include ParameterType
-    alias Key = {String, String, String}
   end
 
   record DihedralType,
@@ -23,13 +21,11 @@ module MM
     force_constant : Float64,
     phase : Float64 do
     include ParameterType
-    alias Key = {String, String, String, String}
   end
 
   record ImproperType,
     force_constant : Float64,
     eq_value : Float64 do
     include ParameterType
-    alias Key = {String, String, String, String}
   end
 end
