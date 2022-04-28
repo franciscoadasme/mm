@@ -20,10 +20,14 @@ class MM::ParameterSet
       case (path = Path.new(path)).extension
       when ".rtf", ".top"
         CHARMM.load_topology(params, path)
+      when ".par", ".prm"
+        CHARMM.load_parameters(params, path)
       when ".inp"
         case path.basename
         when .includes?("top")
           CHARMM.load_topology(params, path)
+        when .includes?("par")
+          CHARMM.load_parameters(params, path)
         else
           raise ArgumentError.new("Unrecognized file type: #{path}")
         end
