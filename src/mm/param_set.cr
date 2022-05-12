@@ -91,14 +91,20 @@ class MM::ParameterSet
 
   def angles : Hash::View(AngleKey, AngleType)
     @angles.view
+  end
+
   def atoms : Hash::View(String, AtomType)
     @atoms.view
+  end
+
   def bonds : Hash::View(BondKey, BondType)
     @bonds.view
   end
 
   def dihedrals : DihedralHashView
     DihedralHashView.new(@dihedrals)
+  end
+
   def impropers : ImproperHashView
     ImproperHashView.new(@impropers)
   end
