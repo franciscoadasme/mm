@@ -159,6 +159,35 @@ class MM::ParameterSet
     @residues.view
   end
 
+  {% for type in %w(bond angle dihedral improper).map(&.id) %}
+    def fuzzy_search(
+      {{type}} : Chem::{{type.camelcase}}
+    ) : {% if type == "dihedral" %}Array(Array(DihedralType)){% else %}Array({{type.camelcase}}Type){% end %}
+      pattern = {{type}}.atoms.map do |atom|
+        typename = atom.type || raise ArgumentError.new("#{atom} has no type")
+        atom_type = @atoms[typename]? || raise KeyError.new("Unknown atom type #{typename}")
+        resname = atom.residue.name
+        restype = @residues[resname]? || raise KeyError.new("Unknown residue type #{resname}")
+        if typename == restype.atoms[atom.name]?.try(&.typename)
+          typename
+        else # atom was changed or added by a patch
+          atom_type.element
+        end
+      end
+      @{{type}}s.compact_map { |typenames, {{type}}|
+        if typenames.zip(pattern).all? { |typename, atom_pattern|
+            if atom_type = @atoms[typename]?
+              atom_type.matches?(atom_pattern)
+            else # nil signals any atom (wildcard)
+              true
+            end
+          }
+          {{type}}
+        end
+      }
+    end
+  {% end %}
+end
 
 struct MM::DihedralHashView
   alias K = {String?, String, String, String?}

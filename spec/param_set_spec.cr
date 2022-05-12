@@ -103,4 +103,33 @@ describe MM::ParameterSet do
       ]
     end
   end
+
+  describe "#fuzzy_search" do
+    it "searches params for an angle" do
+      topology = Chem::Topology.read "spec/data/5yok_initial.psf"
+      params = MM::ParameterSet.from_charmm(
+        "spec/data/top_opls_aam_M.inp",
+        "spec/data/par_opls_aam_M.inp")
+      angle = Chem::Angle[*topology.atoms[{10, 8, 28}]]
+      angle_types = params.fuzzy_search(angle)
+      angle_types.should_not be_empty
+      angle_types.size.should eq 1
+      angle_types[0].force_constant.should eq 63
+      angle_types[0].eq_value.should eq 111.1
+      angle_types[0].penalty.should eq 0
+      angle_types[0].comment.should eq "commented temporarily by MB"
+    end
+
+    it "searches params for a dihedral" do
+      topology = Chem::Topology.read "spec/data/5yok_initial.psf"
+      params = MM::ParameterSet.from_charmm(
+        "spec/data/top_opls_aam_M.inp",
+        "spec/data/par_opls_aam_M.inp")
+      dihedral = Chem::Dihedral[*topology.atoms[{10, 8, 28, 30}]]
+      dihedral_types = params.fuzzy_search(dihedral)
+      dihedral_types.should_not be_empty
+      dihedral_types.size.should eq 1
+      dihedral_types[0].should eq params.dihedrals[{"C136", "C224", "C235", "O236"}]
+    end
+  end
 end
