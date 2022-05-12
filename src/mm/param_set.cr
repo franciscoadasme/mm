@@ -3,6 +3,7 @@ class MM::ParameterSet
   alias AngleKey = {String, String, String}
   alias DihedralKey = {String?, String, String, String?}
   alias ImproperKey = {String, String?, String?, String}
+  alias C = Chem::Bond | Chem::Angle | Chem::Dihedral | Chem::Improper
 
   @angles = {} of AngleKey => AngleType
   @atoms = {} of String => AtomType
@@ -128,6 +129,18 @@ class MM::ParameterSet
 
   def bonds : Hash::View(BondKey, BondType)
     @bonds.view
+  end
+
+  def detect_missing(top : Chem::Topology) : Array(C)
+    missing_params = {} of String => C
+    {% for name in %w(bond angle dihedral improper) %}
+      top.{{name.id}}s.each do |{{name.id}}|
+        next if self[{{name.id}}]?
+        key = {{name.id}}.atoms.join('-', &.type)
+        missing_params[key] ||= {{name.id}}
+      end
+    {% end %}
+    missing_params.values
   end
 
   def dihedrals : DihedralHashView

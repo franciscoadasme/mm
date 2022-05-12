@@ -74,4 +74,33 @@ describe MM::ParameterSet do
       params.impropers[{"D", "B", "C", "A"}]?.should eq improper
     end
   end
+
+  describe "#detect_missing" do
+    it "finds missing parameters" do
+      topology = Chem::Topology.read "spec/data/5yok_initial.psf"
+      params = MM::ParameterSet.from_charmm(
+        "spec/data/top_opls_aam_M.inp",
+        "spec/data/par_opls_aam_M.inp")
+      params.detect_missing(topology).map(&.atoms.map(&.type)).should eq [
+        {"C136", "C224", "C267"},
+        {"C137", "C224", "C267"},
+        {"C149", "C224", "C267"},
+        {"C136", "C224", "C267", "O268"},
+        {"C136", "C224", "C267", "O269"},
+        {"H140", "C136", "C224", "C267"},
+        {"C308", "C136", "C224", "C267"},
+        {"C137", "C136", "C224", "C267"},
+        {"C137", "C224", "C267", "O268"},
+        {"C137", "C224", "C267", "O269"},
+        {"H140", "C137", "C224", "C267"},
+        {"C135", "C137", "C224", "C267"},
+        {"C136", "C136", "C224", "C267"},
+        {"C149", "C224", "C267", "O268"},
+        {"C149", "C224", "C267", "O269"},
+        {"H140", "C149", "C224", "C267"},
+        {"C145", "C149", "C224", "C267"},
+        {"C136", "C137", "C224", "C267"},
+      ]
+    end
+  end
 end
