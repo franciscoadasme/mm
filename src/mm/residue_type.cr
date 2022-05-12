@@ -9,7 +9,7 @@ class MM::ResidueType
 
   def initialize(
     @name : String,
-    @atoms : Array(AtomRecord),
+    @atoms : Hash(String, AtomRecord),
     @bonds : Array(BondRecord),
     @link_bond : BondRecord? = nil,
     @first_patch : String? = nil,
@@ -17,7 +17,7 @@ class MM::ResidueType
   )
   end
 
-  def atoms : ArrayView(AtomRecord)
+  def atoms : Hash::View(String, AtomRecord)
     @atoms.view
   end
 
@@ -26,6 +26,6 @@ class MM::ResidueType
   end
 
   def partial_charge : Float64
-    @atoms.sum &.partial_charge
+    @atoms.sum &.[1].partial_charge
   end
 end

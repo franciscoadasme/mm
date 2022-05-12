@@ -128,7 +128,7 @@ module MM::CHARMM
           end
         when "RESI", "PRES"
           name = tokens[1].upcase
-          atoms = [] of ResidueType::AtomRecord
+          atoms = {} of String => ResidueType::AtomRecord
           bonds = [] of ResidueType::BondRecord
           delete_atoms = [] of String
           first_patch = default_first_patch
@@ -142,8 +142,8 @@ module MM::CHARMM
             when "ATOM"
               atom_name = tokens[1].upcase
               type_name = tokens[2].upcase
-              partial_charge = tokens[3].chomp('!').to_f? || raise "Invalid charge"
-              atoms << ResidueType::AtomRecord.new(atom_name, type_name, partial_charge)
+              charge = tokens[3].chomp('!').to_f? || raise "Invalid charge"
+              atoms[atom_name] = ResidueType::AtomRecord.new(atom_name, type_name, charge)
             when "DELETE"
               next unless tokens[1].upcase == "ATOM"
               delete_atoms << tokens[2].upcase

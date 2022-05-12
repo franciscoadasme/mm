@@ -3,13 +3,13 @@ class MM::Patch
 
   def initialize(
     @name : String,
-    @atoms : Array(ResidueType::AtomRecord),
+    @atoms : Hash(String, ResidueType::AtomRecord),
     @bonds : Array(ResidueType::BondRecord),
     @delete_atoms : Array(String)
   )
   end
 
-  def atoms : Indexable(ResidueType::AtomRecord)
+  def atoms : Hash::View(String, ResidueType::AtomRecord)
     @atoms.view
   end
 
@@ -22,6 +22,6 @@ class MM::Patch
   end
 
   def partial_charge : Float64
-    @atoms.sum &.partial_charge
+    @atoms.sum &.[1].partial_charge
   end
 end
