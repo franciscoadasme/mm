@@ -15,4 +15,13 @@ class MM::AtomType
     @comment : String? = nil
   )
   end
+
+  def matches?(pattern : Chem::Element | String) : Bool
+    case pattern
+    in Chem::Element
+      @element == pattern
+    in String
+      @name == pattern
+    end
+  end
 end
