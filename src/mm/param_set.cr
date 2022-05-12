@@ -93,23 +93,63 @@ class MM::ParameterSet
     @bonds.view
   end
 
+  def dihedrals : DihedralHashView
+    DihedralHashView.new(@dihedrals)
+  def impropers : ImproperHashView
+    ImproperHashView.new(@impropers)
   end
 
   def patches : Hash::View(String, Patch)
     @patches.view
   end
 
-  def dihedrals : HashView(DihedralKey, Array(DihedralType))
-    HashView.new @dihedrals
   def residues : Hash::View(String, ResidueType)
     @residues.view
   end
 
-  def impropers : HashView(ImproperKey, ImproperType)
-    HashView.new @impropers
+
+struct MM::DihedralHashView
+  alias K = {String?, String, String, String?}
+  alias V = Array(DihedralType)
+
+  include Hash::Wrapper(K, V)
+
+  def [](key : K) : V?
+    fetch(key) { raise KeyError.new("Missing dihedral angle between #{key.join(' ')}") }
   end
 
+  def []?(key : K) : V?
+    fetch(key, nil)
   end
 
+  def fetch(key : K, default : T) : V | T forall T
+    fetch(key) { default }
+  end
+
+  def fetch(key : K, & : K -> T) : V | T forall T
+    @wrapped[key]? || @wrapped[{nil, key[1], key[2], nil}]? || yield key
+  end
+end
+
+struct MM::ImproperHashView
+  alias K = {String, String?, String?, String}
+  alias V = ImproperType
+
+  include Hash::Wrapper(K, V)
+
+  def [](key : K) : V?
+    fetch(key) { raise KeyError.new("Missing improper dihedral angle between #{key.join(' ')}") }
+  end
+
+  def []?(key : K) : V?
+    fetch(key, nil)
+  end
+
+  def fetch(key : K, default : T) : V | T forall T
+    fetch(key) { default }
+  end
+
+  def fetch(key : K, & : K -> T) : V | T forall T
+    @wrapped[key]? || @wrapped[{key[0], nil, nil, key[3]}]? || yield key
   end
 end
