@@ -85,31 +85,31 @@ class MM::ParameterSet
     @patches[name] = patch
   end
 
-  def angles : HashView(AngleKey, AngleType)
-    HashView.new @angles
+  def angles : Hash::View(AngleKey, AngleType)
+    @angles.view
+  def atoms : Hash::View(String, AtomType)
+    @atoms.view
+  def bonds : Hash::View(BondKey, BondType)
+    @bonds.view
   end
 
-  def atoms : HashView(String, AtomType)
-    HashView.new @atoms
   end
 
-  def bonds : HashView(BondKey, BondType)
-    HashView.new @bonds
+  def patches : Hash::View(String, Patch)
+    @patches.view
   end
 
   def dihedrals : HashView(DihedralKey, Array(DihedralType))
     HashView.new @dihedrals
+  def residues : Hash::View(String, ResidueType)
+    @residues.view
   end
 
   def impropers : HashView(ImproperKey, ImproperType)
     HashView.new @impropers
   end
 
-  def patches : HashView(String, Patch)
-    HashView.new @patches
   end
 
-  def residues : HashView(String, ResidueType)
-    HashView.new @residues
   end
 end

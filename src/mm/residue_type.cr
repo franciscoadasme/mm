@@ -18,11 +18,11 @@ class MM::ResidueType
   end
 
   def atoms : ArrayView(AtomRecord)
-    ArrayView.new @atoms
+    @atoms.view
   end
 
-  def bonds : ArrayView(BondRecord)
-    ArrayView.new @bonds
+  def bonds : Array::View(BondRecord)
+    @bonds.view
   end
 
   def partial_charge : Float64

@@ -10,15 +10,15 @@ class MM::Patch
   end
 
   def atoms : Indexable(ResidueType::AtomRecord)
-    ArrayView.new @atoms
+    @atoms.view
   end
 
-  def bonds : Indexable(ResidueType::BondRecord)
-    ArrayView.new @bonds
+  def bonds : Array::View(ResidueType::BondRecord)
+    @bonds.view
   end
 
-  def delete_atoms : Indexable(String)
-    ArrayView.new @delete_atoms
+  def delete_atoms : Array::View(String)
+    @delete_atoms.view
   end
 
   def partial_charge : Float64
