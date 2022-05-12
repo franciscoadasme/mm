@@ -84,7 +84,7 @@ describe MM::CHARMM do
       dihedrals[2].penalty.should eq 0.0
       dihedrals[2].comment.should be_nil
 
-      params.impropers.size.should eq 210
+      params.impropers.size.should eq 291
 
       improper = params.impropers[{"O268", "C267", "C223", "O269"}]?.should_not be_nil
       improper.force_constant.should eq 10.5
