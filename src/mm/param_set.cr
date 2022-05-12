@@ -53,6 +53,35 @@ class MM::ParameterSet
     self
   end
 
+  {% for type in %w(bond angle dihedral improper).map(&.id) %}
+    # Returns the {{type}} parameter type associated with *{{type}}*.
+    # Raises `KeyError` if the parameter does not exists.
+    #
+    # It uses the typenames of the involved atoms as key to fetch the
+    # parameter type. Raises `ArgumentError` if any atom does not have a
+    # assigned type (`nil`).
+    def [](
+      {{type}} : Chem::{{type.camelcase}}
+    ) : {% if type == "dihedral" %}Array(DihedralType){% else %}{{type.camelcase}}Type{% end %}
+      self[{{type}}]? || raise KeyError.new("Missing parameter for #{{{type}}}")
+    end
+
+    # Returns the {{type}} parameter type associated with *{{type}}* if
+    # exists, else `nil`
+    #
+    # It uses the typenames of the involved atoms as key to fetch the
+    # parameter type. Raises `ArgumentError` if any atom does not have a
+    # assigned type (`nil`).
+    def []?(
+      {{type}} : Chem::{{type.camelcase}}
+    ) : {% if type == "dihedral" %}Array(DihedralType)?{% else %}{{type.camelcase}}Type?{% end %}
+      typenames = {{type}}.atoms.map { |atom|
+        atom.type || raise ArgumentError.new("#{atom} has no type")
+      }
+      {{type}}s[typenames]?
+    end
+  {% end %}
+
   def []=(typenames : BondKey, bond : BondType) : BondType
     @bonds[typenames] = @bonds[typenames.reverse] = bond
   end

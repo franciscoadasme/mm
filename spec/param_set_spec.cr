@@ -1,6 +1,33 @@
 require "./spec_helper"
 
 describe MM::ParameterSet do
+  describe "#[]?" do
+    it "returns the pararameter for the connectivity" do
+      topology = Chem::Topology.read "spec/data/5yok_initial.psf"
+      params = MM::ParameterSet.new
+
+      bond = topology.bonds[0]
+      bond_type = MM::BondType.new(340, 1.09)
+      params[bond.atoms.map(&.type.not_nil!)] = bond_type
+      params[bond]?.should eq bond_type
+
+      angle = topology.angles[0]
+      angle_type = MM::AngleType.new(340, 1.09)
+      params[angle.atoms.map(&.type.not_nil!)] = angle_type
+      params[angle]?.should eq angle_type
+
+      dihedral = topology.dihedrals[0]
+      dihedral_type = MM::DihedralType.new(2, 340, 1.09)
+      params[dihedral.atoms.map(&.type.not_nil!)] = dihedral_type
+      params[dihedral]?.should eq [dihedral_type]
+
+      improper = topology.impropers[0]
+      improper_type = MM::ImproperType.new(340, 1.09)
+      params[improper.atoms.map(&.type.not_nil!)] = improper_type
+      params[improper]?.should eq improper_type
+    end
+  end
+
   describe "#[]=" do
     it "appends an bond" do
       bond = MM::BondType.new(force_constant: 1.1, eq_value: 180)
