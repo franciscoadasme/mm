@@ -70,7 +70,11 @@ class MM::ParameterSet
   end
 
   def []=(typenames : ImproperKey, improper : ImproperType) : ImproperType
-    @impropers[typenames] = @impropers[typenames.reverse] = improper
+    a, b, c, d = typenames
+    {a, c, d}.each_permutation(reuse: true) do |(a, c, d)|
+      @impropers[{a, b, c, d}] = improper if a && d
+    end
+    improper
   end
 
   def []=(name : String, atom : AtomType) : AtomType
