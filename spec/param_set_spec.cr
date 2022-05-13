@@ -114,10 +114,7 @@ describe MM::ParameterSet do
       angle_types = params.fuzzy_search(angle)
       angle_types.should_not be_empty
       angle_types.size.should eq 1
-      angle_types[0].force_constant.should eq 63
-      angle_types[0].eq_value.should eq 111.1
-      angle_types[0].penalty.should eq 0
-      angle_types[0].comment.should eq "commented temporarily by MB"
+      angle_types.keys[0].should eq({"C136", "C224", "C235"})
     end
 
     it "searches params for a dihedral" do
@@ -129,7 +126,7 @@ describe MM::ParameterSet do
       dihedral_types = params.fuzzy_search(dihedral)
       dihedral_types.should_not be_empty
       dihedral_types.size.should eq 1
-      dihedral_types[0].should eq params.dihedrals[{"C136", "C224", "C235", "O236"}]
+      dihedral_types.keys[0].should eq({"C136", "C224", "C235", "O236"})
     end
   end
 end

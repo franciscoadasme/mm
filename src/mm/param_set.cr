@@ -160,9 +160,10 @@ class MM::ParameterSet
   end
 
   {% for type in %w(bond angle dihedral improper).map(&.id) %}
+    {% return_type = type == "dihedral" ? Array(DihedralType) : "#{type.camelcase}Type".id %}
     def fuzzy_search(
       {{type}} : Chem::{{type.camelcase}}
-    ) : {% if type == "dihedral" %}Array(Array(DihedralType)){% else %}Array({{type.camelcase}}Type){% end %}
+    ) : Hash({{type.camelcase}}Key, {{return_type}})
       pattern = {{type}}.atoms.map do |atom|
         typename = atom.type || raise ArgumentError.new("#{atom} has no type")
         atom_type = @atoms[typename]? || raise KeyError.new("Unknown atom type #{typename}")
@@ -174,17 +175,16 @@ class MM::ParameterSet
           atom_type.element
         end
       end
-      @{{type}}s.compact_map { |typenames, {{type}}|
-        if typenames.zip(pattern).all? { |typename, atom_pattern|
-            if atom_type = @atoms[typename]?
-              atom_type.matches?(atom_pattern)
-            else # nil signals any atom (wildcard)
-              true
-            end
-          }
-          {{type}}
-        end
-      }
+
+      @{{type}}s.select do |typenames, {{type}}|
+        typenames.zip(pattern).all? { |typename, atom_pattern|
+          if atom_type = @atoms[typename]?
+            atom_type.matches?(atom_pattern)
+          else # nil signals any atom (wildcard)
+            true
+          end
+        }
+      end
     end
   {% end %}
 end
