@@ -40,17 +40,17 @@ class MM::ParameterSet
   end
 
   def <<(atom : AtomType) : self
-    self[atom.name] = atom
+    @atoms[atom.name] = atom
     self
   end
 
   def <<(restype : ResidueType) : self
-    self[restype.name] = restype
+    @residues[restype.name] = restype
     self
   end
 
   def <<(patch : Patch) : self
-    self[patch.name] = patch
+    @patches[patch.name] = patch
     self
   end
 
@@ -116,18 +116,6 @@ class MM::ParameterSet
       {{type}}s[typenames]?
     end
   {% end %}
-
-  def []=(name : String, atom : AtomType) : AtomType
-    @atoms[name] = atom
-  end
-
-  def []=(name : String, restype : ResidueType) : ResidueType
-    @residues[name] = restype
-  end
-
-  def []=(name : String, patch : Patch) : Patch
-    @patches[name] = patch
-  end
 
   def angles : Hash::View(AngleKey, AngleType)
     @angles.view
