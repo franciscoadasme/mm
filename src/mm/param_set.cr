@@ -187,11 +187,10 @@ class MM::ParameterSet
   {% end %}
 end
 
-struct MM::DihedralHashView
-  alias K = {String?, String, String, String?}
-  alias V = Array(DihedralType)
-
+private abstract struct ParameterHashView(K, V)
   include Hash::Wrapper(K, V)
+
+  abstract def fetch(key : K, & : K -> T) : V | T forall T
 
   def [](key : K) : V?
     fetch(key) { raise KeyError.new("Missing dihedral angle between #{key.join(' ')}") }
@@ -204,30 +203,15 @@ struct MM::DihedralHashView
   def fetch(key : K, default : T) : V | T forall T
     fetch(key) { default }
   end
+end
 
+private struct MM::DihedralHashView < ParameterHashView({String?, String, String, String?}, Array(MM::DihedralType))
   def fetch(key : K, & : K -> T) : V | T forall T
     @wrapped[key]? || @wrapped[{nil, key[1], key[2], nil}]? || yield key
   end
 end
 
-struct MM::ImproperHashView
-  alias K = {String, String?, String?, String}
-  alias V = ImproperType
-
-  include Hash::Wrapper(K, V)
-
-  def [](key : K) : V?
-    fetch(key) { raise KeyError.new("Missing improper dihedral angle between #{key.join(' ')}") }
-  end
-
-  def []?(key : K) : V?
-    fetch(key, nil)
-  end
-
-  def fetch(key : K, default : T) : V | T forall T
-    fetch(key) { default }
-  end
-
+private struct MM::ImproperHashView < ParameterHashView({String, String?, String?, String}, MM::ImproperType)
   def fetch(key : K, & : K -> T) : V | T forall T
     @wrapped[key]? || @wrapped[{key[0], nil, nil, key[3]}]? || yield key
   end
