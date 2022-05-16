@@ -133,4 +133,28 @@ describe MM::ParameterSet do
       dihedral_types.keys[0].should eq({"C136", "C224", "C235", "O236"})
     end
   end
+
+  describe "#dihedrals" do
+    describe "#[]?" do
+      it "returns a dihedral with wildcards" do
+        dihedral_t = MM::DihedralType.new({nil, "B", "C", nil}, 2, 1.1, 180)
+        params = MM::ParameterSet.new
+        params << dihedral_t
+        params.dihedrals[{"A", "B", "C", "D"}]?.should eq [dihedral_t]
+        params.dihedrals[{"Y", "B", "C", "Z"}]?.should eq [dihedral_t]
+      end
+    end
+  end
+
+  describe "#impropers" do
+    describe "#[]?" do
+      it "returns an improper with wildcards" do
+        improper_t = MM::ImproperType.new({"A", nil, nil, "D"}, 1.1, 180)
+        params = MM::ParameterSet.new
+        params << improper_t
+        params.impropers[{"A", "B", "C", "D"}]?.should eq improper_t
+        params.impropers[{"A", "Y", "Z", "D"}]?.should eq improper_t
+      end
+    end
+  end
 end
