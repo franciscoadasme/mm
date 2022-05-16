@@ -54,6 +54,40 @@ class MM::ParameterSet
     self
   end
 
+  def <<(bond : BondType) : self
+    @bonds[bond.typenames] = @bonds[bond.typenames.reverse] = bond
+    self
+  end
+
+  def <<(angle : AngleType) : self
+    @angles[angle.typenames] = @angles[angle.typenames.reverse] = angle
+    self
+  end
+
+  def <<(dihedral : DihedralType) : self
+    {dihedral.typenames, dihedral.typenames.reverse}.each do |key|
+      @dihedrals[key] << dihedral unless dihedral.in?(@dihedrals[key])
+    end
+    self
+  end
+
+  def <<(dihedrals : Array(DihedralType)) : self
+    keys = dihedrals.map(&.typenames).uniq!
+    if keys.size > 1
+      raise ArgumentError.new("Dihedrals have different atom types")
+    end
+    @dihedrals[keys[0]] = @dihedrals[keys[0].reverse] = dihedrals
+    self
+  end
+
+  def <<(improper : ImproperType) : self
+    a, b, c, d = improper.typenames
+    {a, c, d}.each_permutation(reuse: true) do |(a, c, d)|
+      @impropers[{a, b, c, d}] = improper if a && d
+    end
+    self
+  end
+
   {% for type in %w(bond angle dihedral improper).map(&.id) %}
     # Returns the {{type}} parameter type associated with *{{type}}*.
     # Raises `KeyError` if the parameter does not exists.
@@ -82,30 +116,6 @@ class MM::ParameterSet
       {{type}}s[typenames]?
     end
   {% end %}
-
-  def []=(typenames : BondKey, bond : BondType) : BondType
-    @bonds[typenames] = @bonds[typenames.reverse] = bond
-  end
-
-  def []=(typenames : AngleKey, angle : AngleType) : AngleType
-    @angles[typenames] = @angles[typenames.reverse] = angle
-  end
-
-  def []=(typenames : DihedralKey, dihedral : DihedralType) : DihedralType
-    @dihedrals[typenames] << dihedral
-    if (rtypenames = typenames.reverse) != typenames # avoid duplication
-      @dihedrals[rtypenames] << dihedral
-    end
-    dihedral
-  end
-
-  def []=(typenames : ImproperKey, improper : ImproperType) : ImproperType
-    a, b, c, d = typenames
-    {a, c, d}.each_permutation(reuse: true) do |(a, c, d)|
-      @impropers[{a, b, c, d}] = improper if a && d
-    end
-    improper
-  end
 
   def []=(name : String, atom : AtomType) : AtomType
     @atoms[name] = atom

@@ -46,16 +46,14 @@ module MM::CHARMM
           type2 = tokens[1].upcase
           force_constant = tokens[2].to_f? || raise "Invalid force constant"
           eq_value = tokens[3].to_f? || raise "Invalid equilibrium value"
-          new_type = BondType.new force_constant, eq_value, penalty, comment
-          params[{type1, type2}] = new_type
+          params << BondType.new({type1, type2}, force_constant, eq_value, penalty, comment)
         when {"angles", _}
           type1 = tokens[0].upcase
           type2 = tokens[1].upcase
           type3 = tokens[2].upcase
           force_constant = tokens[3].to_f? || raise "Invalid force constant"
           eq_value = tokens[4].to_f? || raise "Invalid equilibrium value"
-          new_type = AngleType.new force_constant, eq_value, penalty, comment
-          params[{type1, type2, type3}] = new_type
+          params << AngleType.new({type1, type2, type3}, force_constant, eq_value, penalty, comment)
         when {"dihedrals", _}
           type1 = tokens[0].upcase
           type1 = nil if type1 == WILDCARD_TYPE_NAME
@@ -66,8 +64,7 @@ module MM::CHARMM
           force_constant = tokens[4].to_f? || raise "Invalid force constant"
           multiplicity = tokens[5].to_i? || raise "Invalid multiplicity"
           eq_value = tokens[6].to_f? || raise "Invalid equilibrium value"
-          new_type = DihedralType.new multiplicity, force_constant, eq_value, penalty, comment
-          params[{type1, type2, type3, type4}] = new_type
+          params << DihedralType.new({type1, type2, type3, type4}, multiplicity, force_constant, eq_value, penalty, comment)
         when {"impropers", _}
           type1 = tokens[0].upcase
           type2 = tokens[1].upcase
@@ -77,8 +74,7 @@ module MM::CHARMM
           type4 = tokens[3].upcase
           force_constant = tokens[4].to_f? || raise "Invalid force constant"
           eq_value = tokens[6].to_f? || raise "Invalid equilibrium value"
-          new_type = ImproperType.new force_constant, eq_value, penalty, comment
-          params[{type1, type2, type3, type4}] = new_type
+          params << ImproperType.new({type1, type2, type3, type4}, force_constant, eq_value, penalty, comment)
         when {"nonbonded", _}
           epsilon = tokens[2].to_f?
           rmin = tokens[3].to_f?.try &.*(2)

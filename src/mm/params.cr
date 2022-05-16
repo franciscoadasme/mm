@@ -1,13 +1,15 @@
 module MM
   record LennardJones, epsilon : Float64, rmin : Float64, comment : String?
 
-  module ParameterType
+  abstract struct ParameterType(*T)
     getter force_constant : Float64
     getter eq_value : Float64
     getter penalty : Float64 = 0.0
     getter comment : String?
+    getter typenames : Tuple(*T)
 
     def initialize(
+      @typenames : Tuple(*T),
       @force_constant : Float64,
       @eq_value : Float64,
       @penalty : Float64 = 0.0,
@@ -16,20 +18,17 @@ module MM
     end
   end
 
-  struct BondType
-    include ParameterType
+  struct BondType < ParameterType(String, String)
   end
 
-  struct AngleType
-    include ParameterType
+  struct AngleType < ParameterType(String, String, String)
   end
 
-  struct DihedralType
-    include ParameterType
-
+  struct DihedralType < ParameterType(String?, String, String, String?)
     getter multiplicity : Int32
 
     def initialize(
+      @typenames : Tuple(String?, String, String, String?),
       @multiplicity : Int32,
       @force_constant : Float64,
       @eq_value : Float64,
@@ -39,7 +38,6 @@ module MM
     end
   end
 
-  struct ImproperType
-    include ParameterType
+  struct ImproperType < ParameterType(String, String?, String?, String)
   end
 end

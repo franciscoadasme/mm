@@ -7,65 +7,69 @@ describe MM::ParameterSet do
       params = MM::ParameterSet.new
 
       bond = topology.bonds[0]
-      bond_type = MM::BondType.new(340, 1.09)
-      params[bond.atoms.map(&.type.not_nil!)] = bond_type
+      typenames = bond.atoms.map(&.type.not_nil!)
+      bond_type = MM::BondType.new(typenames, 340, 1.09)
+      params << bond_type
       params[bond]?.should eq bond_type
 
       angle = topology.angles[0]
-      angle_type = MM::AngleType.new(340, 1.09)
-      params[angle.atoms.map(&.type.not_nil!)] = angle_type
+      typenames = angle.atoms.map(&.type.not_nil!)
+      angle_type = MM::AngleType.new(typenames, 340, 1.09)
+      params << angle_type
       params[angle]?.should eq angle_type
 
       dihedral = topology.dihedrals[0]
-      dihedral_type = MM::DihedralType.new(2, 340, 1.09)
-      params[dihedral.atoms.map(&.type.not_nil!)] = dihedral_type
+      typenames = dihedral.atoms.map(&.type.not_nil!)
+      dihedral_type = MM::DihedralType.new(typenames, 2, 340, 1.09)
+      params << dihedral_type
       params[dihedral]?.should eq [dihedral_type]
 
       improper = topology.impropers[0]
-      improper_type = MM::ImproperType.new(340, 1.09)
-      params[improper.atoms.map(&.type.not_nil!)] = improper_type
+      typenames = improper.atoms.map(&.type.not_nil!)
+      improper_type = MM::ImproperType.new(typenames, 340, 1.09)
+      params << improper_type
       params[improper]?.should eq improper_type
     end
   end
 
-  describe "#[]=" do
+  describe "#<<" do
     it "appends an bond" do
-      bond = MM::BondType.new(force_constant: 1.1, eq_value: 180)
+      bond = MM::BondType.new({"A", "B"}, force_constant: 1.1, eq_value: 180)
 
       params = MM::ParameterSet.new
-      params[{"A", "B"}] = bond
+      params << bond
       params.bonds[{"A", "B"}]?.should eq bond
       params.bonds[{"B", "A"}]?.should eq bond
     end
 
     it "appends an angle" do
-      angle = MM::AngleType.new(force_constant: 1.1, eq_value: 180)
+      angle = MM::AngleType.new({"A", "B", "C"}, 1.1, 180)
 
       params = MM::ParameterSet.new
-      params[{"A", "B", "C"}] = angle
+      params << angle
       params.angles[{"A", "B", "C"}]?.should eq angle
       params.angles[{"C", "B", "A"}]?.should eq angle
     end
 
     it "appends a dihedral" do
-      dihedral2 = MM::DihedralType.new(2, force_constant: 1.1, eq_value: 180)
-      dihedral3 = MM::DihedralType.new(2, force_constant: 1.1, eq_value: 180)
+      dihedral2 = MM::DihedralType.new({"A", "B", "C", "D"}, 2, 1.1, 180)
+      dihedral3 = MM::DihedralType.new({"A", "B", "C", "D"}, 3, 1.1, 0.0)
 
       params = MM::ParameterSet.new
-      params[{"A", "B", "C", "D"}] = dihedral2
+      params << dihedral2
       params.dihedrals[{"A", "B", "C", "D"}]?.should eq [dihedral2]
       params.dihedrals[{"D", "C", "B", "A"}]?.should eq [dihedral2]
 
-      params[{"A", "B", "C", "D"}] = dihedral3
+      params << dihedral3
       params.dihedrals[{"A", "B", "C", "D"}]?.should eq [dihedral2, dihedral3]
       params.dihedrals[{"D", "C", "B", "A"}]?.should eq [dihedral2, dihedral3]
     end
 
     it "appends an improper" do
-      improper = MM::ImproperType.new(force_constant: 1.1, eq_value: 180)
+      improper = MM::ImproperType.new({"A", "B", "C", "D"}, 1.1, 180)
 
       params = MM::ParameterSet.new
-      params[{"A", "B", "C", "D"}] = improper
+      params << improper
       params.impropers[{"A", "B", "C", "D"}]?.should eq improper
       params.impropers[{"A", "B", "D", "C"}]?.should eq improper
       params.impropers[{"C", "B", "A", "D"}]?.should eq improper
