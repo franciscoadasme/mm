@@ -83,7 +83,7 @@ module MM::CHARMM
             if (epsilon14 = tokens[5]?) && (rmin14 = tokens[6]?)
               epsilon14 = epsilon14.to_f? || raise "Invalid epsilon"
               rmin14 = rmin14.to_f?.try(&.*(2)) || raise "Invalid Rmin"
-              if atom_type = params.atoms[typename]?
+              if atom_type = params.atom?(typename)
                 atom_type.lj = LennardJones.new(epsilon, rmin, comment)
                 atom_type.lj14 = LennardJones.new(epsilon14, rmin14, comment)
               else

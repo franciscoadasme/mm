@@ -17,6 +17,14 @@ module MM
     )
     end
 
+    def ===(rhs : self) : Bool
+      self === rhs.typenames
+    end
+
+    def ===(typenames : Tuple(*T)) : Bool
+      typenames.in?(@typenames, @typenames.reverse)
+    end
+
     # Returns a copy but changing the given values.
     def copy_with(
       typenames : Tuple(*T) = @typenames,
@@ -58,8 +66,19 @@ module MM
     ) : self
       self.class.new typenames, multiplicity, force_constant, eq_value, penalty, comment
     end
+
+    def ===(typenames : Tuple(String?, String, String, String?)) : Bool
+      super || super({nil, typenames[1], typenames[2], nil})
+    end
   end
 
   struct ImproperType < ParameterType(String, String?, String?, String)
+    def ===(typenames : Tuple(String, String?, String?, String)) : Bool
+      a, b, c, d = typenames
+      {a, c, d}.each_permutation(reuse: true) do |(a, c, d)|
+        return true if {a, b, c, d} == @typenames
+      end
+      false
+    end
   end
 end

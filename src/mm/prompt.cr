@@ -2,12 +2,13 @@ module MM
   {% for type in %w(bond angle dihedral improper).map(&.id) %}
     {% return_type = type == "dihedral" ? Array(DihedralType) : "#{type.camelcase}Type".id %}
     def self.prompt_matching_param(
-      params : ParameterSet, 
+      params : ParameterSet,
       conn : Chem::{{type.camelcase}}
     ) : {{return_type}}?
-      conn_type = conn.class.name.underscore.split('_')[0]
-      typenames = conn.atoms.join('-', &.type)
-      puts "Missing #{conn_type} between #{conn.atoms.join('-')} [#{typenames}]"
+      printf "Missing %s between %s [%s]\n",
+        conn.class.name.split("::").last.underscore.split('_').first,
+        conn.atoms.join(", "),
+        conn.atoms.join('-', &.type),
 
       matching_params = params.fuzzy_search(conn)
       case matching_params.size
@@ -20,6 +21,7 @@ module MM
       else
         prompt_match(matching_params)
       end
+      puts
     end
   {% end %}
 end

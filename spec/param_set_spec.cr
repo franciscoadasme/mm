@@ -38,8 +38,8 @@ describe MM::ParameterSet do
 
       params = MM::ParameterSet.new
       params << bond
-      params.bonds[{"A", "B"}]?.should eq bond
-      params.bonds[{"B", "A"}]?.should eq bond
+      params.bond?({"A", "B"}).should eq bond
+      params.bond?({"B", "A"}).should eq bond
     end
 
     it "appends an angle" do
@@ -47,8 +47,8 @@ describe MM::ParameterSet do
 
       params = MM::ParameterSet.new
       params << angle
-      params.angles[{"A", "B", "C"}]?.should eq angle
-      params.angles[{"C", "B", "A"}]?.should eq angle
+      params.angle?({"A", "B", "C"}).should eq angle
+      params.angle?({"C", "B", "A"}).should eq angle
     end
 
     it "appends a dihedral" do
@@ -57,12 +57,12 @@ describe MM::ParameterSet do
 
       params = MM::ParameterSet.new
       params << dihedral2
-      params.dihedrals[{"A", "B", "C", "D"}]?.should eq [dihedral2]
-      params.dihedrals[{"D", "C", "B", "A"}]?.should eq [dihedral2]
+      params.dihedral?({"A", "B", "C", "D"}).should eq [dihedral2]
+      params.dihedral?({"D", "C", "B", "A"}).should eq [dihedral2]
 
       params << dihedral3
-      params.dihedrals[{"A", "B", "C", "D"}]?.should eq [dihedral2, dihedral3]
-      params.dihedrals[{"D", "C", "B", "A"}]?.should eq [dihedral2, dihedral3]
+      params.dihedral?({"A", "B", "C", "D"}).should eq [dihedral2, dihedral3]
+      params.dihedral?({"D", "C", "B", "A"}).should eq [dihedral2, dihedral3]
     end
 
     it "appends an improper" do
@@ -70,12 +70,12 @@ describe MM::ParameterSet do
 
       params = MM::ParameterSet.new
       params << improper
-      params.impropers[{"A", "B", "C", "D"}]?.should eq improper
-      params.impropers[{"A", "B", "D", "C"}]?.should eq improper
-      params.impropers[{"C", "B", "A", "D"}]?.should eq improper
-      params.impropers[{"C", "B", "D", "A"}]?.should eq improper
-      params.impropers[{"D", "B", "A", "C"}]?.should eq improper
-      params.impropers[{"D", "B", "C", "A"}]?.should eq improper
+      params.improper?({"A", "B", "C", "D"}).should eq improper
+      params.improper?({"A", "B", "D", "C"}).should eq improper
+      params.improper?({"C", "B", "A", "D"}).should eq improper
+      params.improper?({"C", "B", "D", "A"}).should eq improper
+      params.improper?({"D", "B", "A", "C"}).should eq improper
+      params.improper?({"D", "B", "C", "A"}).should eq improper
     end
   end
 
@@ -118,7 +118,7 @@ describe MM::ParameterSet do
       angle_types = params.fuzzy_search(angle)
       angle_types.should_not be_empty
       angle_types.size.should eq 1
-      angle_types.keys[0].should eq({"C136", "C224", "C235"})
+      angle_types[0].typenames.should eq({"C136", "C224", "C235"})
     end
 
     it "searches params for a dihedral" do
@@ -130,7 +130,7 @@ describe MM::ParameterSet do
       dihedral_types = params.fuzzy_search(dihedral)
       dihedral_types.should_not be_empty
       dihedral_types.size.should eq 1
-      dihedral_types.keys[0].should eq({"C136", "C224", "C235", "O236"})
+      dihedral_types[0][0].typenames.should eq({"C136", "C224", "C235", "O236"})
     end
   end
 
@@ -140,8 +140,8 @@ describe MM::ParameterSet do
         dihedral_t = MM::DihedralType.new({nil, "B", "C", nil}, 2, 1.1, 180)
         params = MM::ParameterSet.new
         params << dihedral_t
-        params.dihedrals[{"A", "B", "C", "D"}]?.should eq [dihedral_t]
-        params.dihedrals[{"Y", "B", "C", "Z"}]?.should eq [dihedral_t]
+        params.dihedral?({"A", "B", "C", "D"}).should eq [dihedral_t]
+        params.dihedral?({"Y", "B", "C", "Z"}).should eq [dihedral_t]
       end
     end
   end
@@ -152,8 +152,8 @@ describe MM::ParameterSet do
         improper_t = MM::ImproperType.new({"A", nil, nil, "D"}, 1.1, 180)
         params = MM::ParameterSet.new
         params << improper_t
-        params.impropers[{"A", "B", "C", "D"}]?.should eq improper_t
-        params.impropers[{"A", "Y", "Z", "D"}]?.should eq improper_t
+        params.improper?({"A", "B", "C", "D"}).should eq improper_t
+        params.improper?({"A", "Y", "Z", "D"}).should eq improper_t
       end
     end
   end

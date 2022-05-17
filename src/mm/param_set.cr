@@ -5,15 +5,13 @@ class MM::ParameterSet
   alias ImproperKey = {String, String?, String?, String}
   alias C = Chem::Bond | Chem::Angle | Chem::Dihedral | Chem::Improper
 
-  @angles = {} of AngleKey => AngleType
-  @atoms = {} of String => AtomType
-  @bonds = {} of BondKey => BondType
-  @dihedrals = Hash(DihedralKey, Array(DihedralType)).new do |hash, key|
-    hash[key] = [] of DihedralType
-  end
-  @impropers = {} of ImproperKey => ImproperType
-  @patches = {} of String => Patch
-  @residues = {} of String => ResidueType
+  @angles = [] of AngleType
+  @atoms = [] of AtomType
+  @bonds = [] of BondType
+  @dihedrals = [] of Array(DihedralType)
+  @impropers = [] of ImproperType
+  @patches = [] of Patch
+  @residues = [] of ResidueType
 
   def self.from_charmm(*paths : Path | String) : self
     params = new
@@ -39,51 +37,38 @@ class MM::ParameterSet
     params
   end
 
-  def <<(atom : AtomType) : self
-    @atoms[atom.name] = atom
-    self
-  end
+  {% for name in %w(angle atom bond improper patch residue).map(&.id) %}
+    {% type = (name == "patch" ? "Patch" : "#{name.camelcase}Type").id %}
+    {% plural_name = (name == "patch" ? "patches" : "#{name}s").id %}
 
-  def <<(restype : ResidueType) : self
-    @residues[restype.name] = restype
-    self
-  end
+    def <<({{name}}_t : {{type}}) : self
+      if i = index({{name}}_t)
+        @{{plural_name}}[i] = {{name}}_t
+      else
+        @{{plural_name}} << {{name}}_t
+      end
+      self
+    end
 
-  def <<(patch : Patch) : self
-    @patches[patch.name] = patch
-    self
-  end
+    def index({{name}}_t : {{type}}) : Int32?
+      @{{plural_name}}.index &.===({{name}}_t)
+    end
+  {% end %}
 
-  def <<(bond : BondType) : self
-    @bonds[bond.typenames] = @bonds[bond.typenames.reverse] = bond
-    self
-  end
-
-  def <<(angle : AngleType) : self
-    @angles[angle.typenames] = @angles[angle.typenames.reverse] = angle
-    self
-  end
-
-  def <<(dihedral : DihedralType) : self
-    {dihedral.typenames, dihedral.typenames.reverse}.each do |key|
-      @dihedrals[key] << dihedral unless dihedral.in?(@dihedrals[key])
+  def <<(dihedral_t : DihedralType) : self
+    if i = index(dihedral_t)
+      @dihedrals[i] << dihedral_t
+    else
+      @dihedrals << [dihedral_t]
     end
     self
   end
 
-  def <<(dihedrals : Array(DihedralType)) : self
-    keys = dihedrals.map(&.typenames).uniq!
-    if keys.size > 1
-      raise ArgumentError.new("Dihedrals have different atom types")
-    end
-    @dihedrals[keys[0]] = @dihedrals[keys[0].reverse] = dihedrals
-    self
-  end
-
-  def <<(improper : ImproperType) : self
-    a, b, c, d = improper.typenames
-    {a, c, d}.each_permutation(reuse: true) do |(a, c, d)|
-      @impropers[{a, b, c, d}] = improper if a && d
+  def <<(dihedral_types : Array(DihedralType)) : self
+    if i = index(dihedral_types)
+      @dihedrals[i] = dihedral_t
+    else
+      @dihedrals << dihedral_t
     end
     self
   end
@@ -112,19 +97,31 @@ class MM::ParameterSet
       typenames = {{type}}.atoms.map { |atom|
         atom.type || raise ArgumentError.new("#{atom} has no type")
       }
-      {{type}}s[typenames]?
+      {{type}}? typenames
     end
   {% end %}
 
-  def angles : Hash::View(AngleKey, AngleType)
+  def angle?(typenames : {String, String, String}) : AngleType?
+    @angles.find &.===(typenames)
+  end
+
+  def angles : Array::View(AngleType)
     @angles.view
   end
 
-  def atoms : Hash::View(String, AtomType)
+  def atom?(name : String) : AtomType?
+    @atoms.find &.name.==(name.upcase)
+  end
+
+  def atoms : Array::View(AtomType)
     @atoms.view
   end
 
-  def bonds : Hash::View(BondKey, BondType)
+  def bond?(typenames : {String, String}) : BondType?
+    @bonds.find &.===(typenames)
+  end
+
+  def bonds : Array::View(BondType)
     @bonds.view
   end
 
@@ -140,19 +137,46 @@ class MM::ParameterSet
     missing_params.values
   end
 
-  def dihedrals : DihedralHashView
-    DihedralHashView.new(@dihedrals)
+  def dihedral?(typenames : {String?, String, String, String?}) : Array(DihedralType)?
+    @dihedrals.find &.first.===(typenames)
   end
 
-  def impropers : ImproperHashView
-    ImproperHashView.new(@impropers)
+  def dihedrals : Array::View(Array(DihedralType))
+    @dihedrals.view
   end
 
-  def patches : Hash::View(String, Patch)
+  def improper?(typenames : {String, String?, String?, String}) : ImproperType?
+    @impropers.find &.===(typenames)
+  end
+
+  def impropers : Array::View(ImproperType)
+    @impropers.view
+  end
+
+  def index(dihedral_t : DihedralType) : Int32?
+    @dihedrals.index &.first.===(dihedral_t)
+  end
+
+  def index(dihedral_types : Array(DihedralType)) : Int32?
+    if dihedrals.map(&.typenames).uniq!
+      raise ArgumentError.new("Dihedrals have different atom types")
+    end
+    index dihedral_types.first
+  end
+
+  def patch?(name : String) : Patch?
+    @patches.find &.name.==(name.upcase)
+  end
+
+  def patches : Array::View(Patch)
     @patches.view
   end
 
-  def residues : Hash::View(String, ResidueType)
+  def residue?(name : String) : ResidueType?
+    @residues.find &.name.==(name.upcase)
+  end
+
+  def residues : Array::View(ResidueType)
     @residues.view
   end
 
@@ -160,12 +184,12 @@ class MM::ParameterSet
     {% return_type = type == "dihedral" ? Array(DihedralType) : "#{type.camelcase}Type".id %}
     def fuzzy_search(
       {{type}} : Chem::{{type.camelcase}}
-    ) : Hash({{type.camelcase}}Key, {{return_type}})
+    ) : Array({{return_type}})
       pattern = {{type}}.atoms.map do |atom|
         typename = atom.type || raise ArgumentError.new("#{atom} has no type")
-        atom_type = @atoms[typename]? || raise KeyError.new("Unknown atom type #{typename}")
+        atom_type = atom?(typename) || raise KeyError.new("Unknown atom type #{typename}")
         resname = atom.residue.name
-        restype = @residues[resname]? || raise KeyError.new("Unknown residue type #{resname}")
+        restype = residue?(resname) || raise KeyError.new("Unknown residue type #{resname}")
         if typename == restype.atoms[atom.name]?.try(&.typename)
           typename
         else # atom was changed or added by a patch
@@ -173,9 +197,9 @@ class MM::ParameterSet
         end
       end
 
-      @{{type}}s.select do |typenames, {{type}}|
-        typenames.zip(pattern).all? { |typename, atom_pattern|
-          if atom_type = @atoms[typename]?
+      @{{type}}s.select do |{{type}}|
+        {{type}}{% if type == "dihedral" %}[0]{% end %}.typenames.zip(pattern).all? { |typename, atom_pattern|
+          if atom_type = typename.try { |typename| atom?(typename) }
             atom_type.matches?(atom_pattern)
           else # nil signals any atom (wildcard)
             true
@@ -184,34 +208,4 @@ class MM::ParameterSet
       end
     end
   {% end %}
-end
-
-private abstract struct ParameterHashView(K, V)
-  include Hash::Wrapper(K, V)
-
-  abstract def fetch(key : K, & : K -> T) : V | T forall T
-
-  def [](key : K) : V?
-    fetch(key) { raise KeyError.new("Missing dihedral angle between #{key.join(' ')}") }
-  end
-
-  def []?(key : K) : V?
-    fetch(key, nil)
-  end
-
-  def fetch(key : K, default : T) : V | T forall T
-    fetch(key) { default }
-  end
-end
-
-private struct MM::DihedralHashView < ParameterHashView({String?, String, String, String?}, Array(MM::DihedralType))
-  def fetch(key : K, & : K -> T) : V | T forall T
-    @wrapped[key]? || @wrapped[{nil, key[1], key[2], nil}]? || yield key
-  end
-end
-
-private struct MM::ImproperHashView < ParameterHashView({String, String?, String?, String}, MM::ImproperType)
-  def fetch(key : K, & : K -> T) : V | T forall T
-    @wrapped[key]? || @wrapped[{key[0], nil, nil, key[3]}]? || yield key
-  end
 end
