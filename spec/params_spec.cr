@@ -26,3 +26,256 @@ describe MM::ParameterType do
     end
   end
 end
+
+describe MM::BondType do
+  describe "#==" do
+    it "compares with a bond type" do
+      bond_t = MM::BondType.new({"A", "B"}, 1.1, 2.1)
+      bond_t.should eq bond_t
+      bond_t.should eq MM::BondType.new({"B", "A"}, 1.1, 2.1)
+      bond_t.should_not eq MM::BondType.new({"A", "B"}, 1.5, 2.1)
+      bond_t.should_not eq MM::BondType.new({"A", "C"}, 1.1, 2.1)
+    end
+
+    it "compares with typenames" do
+      bond_t = MM::BondType.new({"A", "B"}, 1.1, 2.1)
+      bond_t.should eq({"A", "B"})
+      bond_t.should eq({"B", "A"})
+      bond_t.should_not eq({"A", "C"})
+    end
+  end
+
+  describe "#===" do
+    it "compares with a bond type" do
+      bond_t = MM::BondType.new({"A", "B"}, 1.1, 2.1)
+      (bond_t === bond_t).should be_true
+      (bond_t === MM::BondType.new({"B", "A"}, 1.1, 2.1)).should be_true
+      (bond_t === MM::BondType.new({"A", "C"}, 1.1, 2.1)).should be_false
+      (bond_t === MM::BondType.new({"A", "B"}, 1.5, 2.1)).should be_true
+    end
+
+    it "compares with typenames" do
+      bond_t = MM::BondType.new({"A", "B"}, 1.1, 2.1)
+      (bond_t === {"A", "B"}).should be_true
+      (bond_t === {"B", "A"}).should be_true
+      (bond_t === {"A", "C"}).should be_false
+    end
+  end
+end
+
+describe MM::AngleType do
+  describe "#==" do
+    it "compares with an angle type" do
+      angle_t = MM::AngleType.new({"A", "B", "C"}, 1.1, 180)
+      angle_t.should eq angle_t
+      angle_t.should eq MM::AngleType.new({"C", "B", "A"}, 1.1, 180)
+      angle_t.should_not eq MM::AngleType.new({"A", "C", "D"}, 1.1, 180)
+      angle_t.should_not eq MM::AngleType.new({"B", "C", "A"}, 1.1, 180)
+      angle_t.should_not eq MM::AngleType.new({"A", "B", "C"}, 1.5, 180)
+    end
+
+    it "compares with typenames" do
+      angle_t = MM::AngleType.new({"A", "B", "C"}, 1.1, 180)
+      angle_t.should eq({"A", "B", "C"})
+      angle_t.should eq({"C", "B", "A"})
+      angle_t.should_not eq({"B", "C", "A"})
+      angle_t.should_not eq({"A", "C", "D"})
+    end
+  end
+
+  describe "#===" do
+    it "compares with an angle type" do
+      angle_t = MM::AngleType.new({"A", "B", "C"}, 1.1, 180)
+      (angle_t === angle_t).should be_true
+      (angle_t === MM::AngleType.new({"C", "B", "A"}, 1.1, 180)).should be_true
+      (angle_t === MM::AngleType.new({"A", "C", "D"}, 1.1, 180)).should be_false
+      (angle_t === MM::AngleType.new({"A", "B", "C"}, 1.5, 180)).should be_true
+    end
+
+    it "compares with typenames" do
+      angle_t = MM::AngleType.new({"A", "B", "C"}, 1.1, 180)
+      (angle_t === {"A", "B", "C"}).should be_true
+      (angle_t === {"C", "B", "A"}).should be_true
+      (angle_t === {"B", "A", "C"}).should be_false
+      (angle_t === {"A", "C", "D"}).should be_false
+    end
+  end
+end
+
+describe MM::DihedralType do
+  describe "#==" do
+    it "compares with a dihedral type" do
+      dihedral_t = MM::DihedralType.new({"A", "B", "C", "D"}, 2, 1.1, 180)
+      dihedral_t.should eq dihedral_t
+      dihedral_t.should eq MM::DihedralType.new({"D", "C", "B", "A"}, 2, 1.1, 180)
+      dihedral_t.should_not eq MM::DihedralType.new({"A", "C", "D", "E"}, 2, 1.1, 180)
+      dihedral_t.should_not eq MM::DihedralType.new({"A", "B", "C", "D"}, 1, 1.5, 180)
+      dihedral_t.should_not eq MM::DihedralType.new({nil, "B", "C", nil}, 1, 1.5, 180)
+
+      dihedral_t = MM::DihedralType.new({nil, "B", "C", nil}, 2, 1.1, 180)
+      dihedral_t.should eq dihedral_t
+      dihedral_t.should eq MM::DihedralType.new({nil, "C", "B", nil}, 2, 1.1, 180)
+      dihedral_t.should_not eq MM::DihedralType.new({"A", "B", "C", "D"}, 2, 1.1, 180)
+      dihedral_t.should_not eq MM::DihedralType.new({"D", "C", "B", "A"}, 2, 1.1, 180)
+      dihedral_t.should_not eq MM::DihedralType.new({"A", "C", "D", "E"}, 2, 1.1, 180)
+      dihedral_t.should_not eq MM::DihedralType.new({"A", "B", "C", "D"}, 1, 1.5, 180)
+      dihedral_t.should_not eq MM::DihedralType.new({nil, "B", "C", nil}, 1, 1.5, 180)
+    end
+
+    it "compares with typenames" do
+      dihedral_t = MM::DihedralType.new({"A", "B", "C", "D"}, 2, 1.1, 180)
+      dihedral_t.should eq({"A", "B", "C", "D"})
+      dihedral_t.should eq({"D", "C", "B", "A"})
+      dihedral_t.should_not eq({"A", "C", "D", "E"})
+      dihedral_t.should_not eq({nil, "B", "C", nil})
+
+      dihedral_t = MM::DihedralType.new({nil, "B", "C", nil}, 2, 1.1, 180)
+      dihedral_t.should eq({nil, "B", "C", nil})
+      dihedral_t.should eq({nil, "C", "B", nil})
+      dihedral_t.should_not eq({"A", "B", "C", "D"})
+      dihedral_t.should_not eq({"D", "C", "B", "A"})
+      dihedral_t.should_not eq({"A", "C", "D", "E"})
+    end
+  end
+
+  describe "#===" do
+    it "compares with a dihedral type" do
+      dihedral_t = MM::DihedralType.new({"A", "B", "C", "D"}, 2, 1.1, 180)
+      (dihedral_t === dihedral_t).should be_true
+      (dihedral_t === MM::DihedralType.new({"D", "C", "B", "A"}, 2, 1.1, 180)).should be_true
+      (dihedral_t === MM::DihedralType.new({"A", "C", "D", "E"}, 2, 1.1, 180)).should be_false
+      (dihedral_t === MM::DihedralType.new({"A", "B", "C", "D"}, 1, 1.5, 180)).should be_true
+      (dihedral_t === MM::DihedralType.new({nil, "B", "C", nil}, 2, 1.1, 180)).should be_true
+      (dihedral_t === MM::DihedralType.new({nil, "C", "B", nil}, 2, 1.1, 180)).should be_true
+      (dihedral_t === MM::DihedralType.new({nil, "B", "D", nil}, 2, 1.1, 180)).should be_false
+
+      dihedral_t = MM::DihedralType.new({nil, "B", "C", nil}, 2, 1.1, 180)
+      (dihedral_t === dihedral_t).should be_true
+      (dihedral_t === MM::DihedralType.new({nil, "B", "C", nil}, 2, 1.1, 180)).should be_true
+      (dihedral_t === MM::DihedralType.new({nil, "B", "C", nil}, 1, 1.5, 180)).should be_true
+      (dihedral_t === MM::DihedralType.new({nil, "C", "B", nil}, 2, 1.1, 180)).should be_true
+      (dihedral_t === MM::DihedralType.new({"A", "B", "C", "D"}, 2, 1.1, 180)).should be_true
+      (dihedral_t === MM::DihedralType.new({"D", "C", "B", "A"}, 2, 1.1, 180)).should be_true
+      (dihedral_t === MM::DihedralType.new({nil, "B", "D", nil}, 2, 1.1, 180)).should be_false
+      (dihedral_t === MM::DihedralType.new({"A", "C", "D", "E"}, 2, 1.1, 180)).should be_false
+    end
+
+    it "compares with typenames" do
+      dihedral_t = MM::DihedralType.new({"A", "B", "C", "D"}, 2, 1.1, 180)
+      (dihedral_t === {"A", "B", "C", "D"}).should be_true
+      (dihedral_t === {"D", "C", "B", "A"}).should be_true
+      (dihedral_t === {"B", "A", "D", "C"}).should be_false
+      (dihedral_t === {"A", "C", "D", "E"}).should be_false
+      (dihedral_t === {nil, "B", "C", nil}).should be_true
+      (dihedral_t === {nil, "C", "B", nil}).should be_true
+      (dihedral_t === {nil, "B", "D", nil}).should be_false
+
+      dihedral_t = MM::DihedralType.new({nil, "B", "C", nil}, 2, 1.1, 180)
+      (dihedral_t === {"A", "B", "C", "D"}).should be_true
+      (dihedral_t === {"D", "C", "B", "A"}).should be_true
+      (dihedral_t === {"B", "A", "D", "C"}).should be_false
+      (dihedral_t === {"A", "C", "D", "E"}).should be_false
+      (dihedral_t === {nil, "B", "C", nil}).should be_true
+      (dihedral_t === {nil, "C", "B", nil}).should be_true
+      (dihedral_t === {nil, "B", "D", nil}).should be_false
+    end
+  end
+end
+
+describe MM::ImproperType do
+  describe "#==" do
+    it "compares with an improper type" do
+      improper_t = MM::ImproperType.new({"A", "B", "C", "D"}, 1.1, 180)
+      improper_t.should eq improper_t
+      improper_t.should_not eq MM::ImproperType.new({"D", "C", "B", "A"}, 1.1, 180)
+      improper_t.should_not eq MM::ImproperType.new({"A", "C", "D", "E"}, 1.1, 180)
+      improper_t.should_not eq MM::ImproperType.new({"A", "B", "C", "D"}, 1.5, 180)
+      improper_t.should_not eq MM::ImproperType.new({"A", nil, nil, "D"}, 1.1, 180)
+
+      improper_t = MM::ImproperType.new({"A", nil, nil, "D"}, 1.1, 180)
+      improper_t.should eq improper_t
+      improper_t.should_not eq MM::ImproperType.new({"D", nil, nil, "A"}, 1.1, 180)
+      improper_t.should_not eq MM::ImproperType.new({"C", nil, nil, "B"}, 1.1, 180)
+      improper_t.should_not eq MM::ImproperType.new({"A", "C", "D", "D"}, 1.1, 180)
+      improper_t.should_not eq MM::ImproperType.new({"D", "B", "A", "C"}, 1.1, 180)
+      improper_t.should_not eq MM::ImproperType.new({"A", "B", "C", "D"}, 1.5, 180)
+    end
+
+    it "compares with typenames" do
+      improper_t = MM::ImproperType.new({"A", "B", "C", "D"}, 1.1, 180)
+      improper_t.should eq({"A", "B", "C", "D"})
+      improper_t.should_not eq({"D", "C", "B", "A"})
+      improper_t.should_not eq({"A", "C", "D", "E"})
+      improper_t.should_not eq({"A", nil, nil, "D"})
+
+      improper_t = MM::ImproperType.new({"A", nil, nil, "D"}, 1.1, 180)
+      improper_t.should eq({"A", nil, nil, "D"})
+      improper_t.should_not eq({"D", nil, nil, "A"})
+      improper_t.should_not eq({"A", "B", "C", "D"})
+      improper_t.should_not eq({"A", "C", "B", "D"})
+      improper_t.should_not eq({"D", "B", "A", "C"})
+      improper_t.should_not eq({"C", nil, nil, "B"})
+    end
+  end
+
+  describe "#===" do
+    it "compares with an improper type" do
+      improper_t = MM::ImproperType.new({"A", "B", "C", "D"}, 1.1, 180)
+      (improper_t === improper_t).should be_true
+      (improper_t === MM::ImproperType.new({"A", "B", "D", "C"}, 1.1, 180)).should be_true
+      (improper_t === MM::ImproperType.new({"C", "B", "A", "D"}, 1.1, 180)).should be_true
+      (improper_t === MM::ImproperType.new({"C", "B", "D", "A"}, 1.1, 180)).should be_true
+      (improper_t === MM::ImproperType.new({"D", "B", "A", "C"}, 1.1, 180)).should be_true
+      (improper_t === MM::ImproperType.new({"D", "B", "C", "A"}, 1.1, 180)).should be_true
+      (improper_t === MM::ImproperType.new({"D", "C", "B", "A"}, 1.1, 180)).should be_false
+      (improper_t === MM::ImproperType.new({"A", "C", "D", "E"}, 1.1, 180)).should be_false
+      (improper_t === MM::ImproperType.new({"A", "B", "C", "D"}, 1.5, 180)).should be_true
+      (improper_t === MM::ImproperType.new({"A", nil, nil, "D"}, 1.1, 180)).should be_true
+      (improper_t === MM::ImproperType.new({"A", nil, nil, "C"}, 1.1, 180)).should be_false
+
+      improper_t = MM::ImproperType.new({"A", nil, nil, "D"}, 1.1, 180)
+      (improper_t === improper_t).should be_true
+      (improper_t === MM::ImproperType.new({"A", "C", "B", "D"}, 1.1, 180)).should be_true
+      (improper_t === MM::ImproperType.new({"A", "B", "D", "C"}, 1.1, 180)).should be_false
+      (improper_t === MM::ImproperType.new({"C", "B", "A", "D"}, 1.1, 180)).should be_false
+      (improper_t === MM::ImproperType.new({"C", "B", "D", "A"}, 1.1, 180)).should be_false
+      (improper_t === MM::ImproperType.new({"D", "B", "A", "C"}, 1.1, 180)).should be_false
+      (improper_t === MM::ImproperType.new({"D", "B", "C", "A"}, 1.1, 180)).should be_false
+      (improper_t === MM::ImproperType.new({"D", "C", "B", "A"}, 1.1, 180)).should be_false
+      (improper_t === MM::ImproperType.new({"A", "C", "D", "E"}, 1.1, 180)).should be_false
+      (improper_t === MM::ImproperType.new({"A", "B", "C", "D"}, 1.5, 180)).should be_true
+      (improper_t === MM::ImproperType.new({"D", nil, nil, "A"}, 1.1, 180)).should be_false
+      (improper_t === MM::ImproperType.new({"A", nil, nil, "C"}, 1.1, 180)).should be_false
+    end
+
+    it "compares with typenames" do
+      improper_t = MM::ImproperType.new({"A", "B", "C", "D"}, 1.1, 180)
+      (improper_t === {"A", "B", "C", "D"}).should be_true
+      (improper_t === {"A", "B", "D", "C"}).should be_true
+      (improper_t === {"C", "B", "A", "D"}).should be_true
+      (improper_t === {"C", "B", "D", "A"}).should be_true
+      (improper_t === {"D", "B", "A", "C"}).should be_true
+      (improper_t === {"D", "B", "C", "A"}).should be_true
+      (improper_t === {"A", "C", "B", "D"}).should be_false
+      (improper_t === {"D", "C", "B", "A"}).should be_false
+      (improper_t === {"A", "C", "D", "E"}).should be_false
+      (improper_t === {"A", nil, nil, "D"}).should be_true
+      (improper_t === {"D", nil, nil, "A"}).should be_false
+      (improper_t === {"A", nil, nil, "C"}).should be_false
+
+      improper_t = MM::ImproperType.new({"A", nil, nil, "D"}, 1.1, 180)
+      (improper_t === {"A", "B", "C", "D"}).should be_true
+      (improper_t === {"A", "B", "D", "C"}).should be_false
+      (improper_t === {"C", "B", "A", "D"}).should be_false
+      (improper_t === {"C", "B", "D", "A"}).should be_false
+      (improper_t === {"D", "B", "A", "C"}).should be_false
+      (improper_t === {"D", "B", "C", "A"}).should be_false
+      (improper_t === {"A", "C", "B", "D"}).should be_true
+      (improper_t === {"D", "C", "B", "A"}).should be_false
+      (improper_t === {"A", "C", "D", "E"}).should be_false
+      (improper_t === {"A", nil, nil, "D"}).should be_true
+      (improper_t === {"D", nil, nil, "A"}).should be_false
+      (improper_t === {"A", nil, nil, "C"}).should be_false
+    end
+  end
+end

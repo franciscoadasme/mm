@@ -17,12 +17,27 @@ module MM
     )
     end
 
+    def <=>(rhs : self) : Int32
+      @typenames.map { |name| name || " " } <=> rhs.typenames.map { |name| name || " " }
+    end
+
+    def ==(rhs : self) : Bool
+      self == rhs.typenames &&
+        @force_constant == rhs.force_constant &&
+        @eq_value == rhs.eq_value &&
+        @penalty == rhs.penalty
+    end
+
+    def ==(typenames : Tuple(*T)) : Bool
+      @typenames == typenames || @typenames.reverse == typenames
+    end
+
     def ===(rhs : self) : Bool
       self === rhs.typenames
     end
 
     def ===(typenames : Tuple(*T)) : Bool
-      typenames.in?(@typenames, @typenames.reverse)
+      self == typenames
     end
 
     # Returns a copy but changing the given values.
@@ -68,17 +83,31 @@ module MM
     end
 
     def ===(typenames : Tuple(String?, String, String, String?)) : Bool
-      super || super({nil, typenames[1], typenames[2], nil})
+      if {Nil, String, String, Nil} === typenames ||
+         {Nil, String, String, Nil} === @typenames
+        typenames[1..2].in?(@typenames[1..2], @typenames[1..2].reverse)
+      else
+        super
+      end
     end
   end
 
   struct ImproperType < ParameterType(String, String?, String?, String)
+    def ==(typenames : Tuple(String, String?, String?, String)) : Bool
+      @typenames == typenames
+    end
+
     def ===(typenames : Tuple(String, String?, String?, String)) : Bool
-      a, b, c, d = typenames
-      {a, c, d}.each_permutation(reuse: true) do |(a, c, d)|
-        return true if {a, b, c, d} == @typenames
+      if {String, Nil, Nil, String} === typenames ||
+         {String, Nil, Nil, String} === @typenames
+        {@typenames[0], @typenames[3]} == {typenames[0], typenames[3]}
+      else
+        a, b, c, d = @typenames
+        {a, c, d}.each_permutation(reuse: true) do |(a, c, d)|
+          return true if {a, b, c, d} == typenames
+        end
+        false
       end
-      false
     end
   end
 end
