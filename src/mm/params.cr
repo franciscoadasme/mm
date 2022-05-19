@@ -29,7 +29,10 @@ module MM
     end
 
     def ==(typenames : Tuple(*T)) : Bool
-      @typenames == typenames || @typenames.reverse == typenames
+      each_typename_permutation do |comb|
+        return true if comb == typenames
+      end
+      false
     end
 
     def ===(rhs : self) : Bool
@@ -49,6 +52,19 @@ module MM
       comment : String? = @comment
     )
       self.class.new typenames, force_constant, eq_value, penalty, comment
+    end
+
+    def each_typename_permutation(& : Tuple(*T) ->) : Nil
+      yield @typenames
+      yield @typenames.reverse
+    end
+
+    def typename_permutations : Array(Tuple(*T))
+      Array(Tuple(*T)).new.tap do |permutations|
+        each_typename_permutation do |permutation|
+          permutations << permutation
+        end
+      end
     end
   end
 
@@ -102,11 +118,17 @@ module MM
          {String, Nil, Nil, String} === @typenames
         {@typenames[0], @typenames[3]} == {typenames[0], typenames[3]}
       else
-        a, b, c, d = @typenames
-        {a, c, d}.each_permutation(reuse: true) do |(a, c, d)|
-          return true if {a, b, c, d} == typenames
+        each_typename_permutation do |other|
+          return true if other == typenames
         end
         false
+      end
+    end
+
+    def each_typename_permutation(& : {String, String?, String?, String} ->) : Nil
+      a, b, c, d = @typenames
+      {a, c, d}.each_permutation(reuse: true) do |(a, c, d)|
+        yield({a, b, c, d}) if a && d
       end
     end
   end

@@ -61,6 +61,16 @@ describe MM::BondType do
       (bond_t === {"A", "C"}).should be_false
     end
   end
+
+  describe "#typename_permutations" do
+    it "returns all permutations of the typenames" do
+      bond_t = MM::BondType.new({"A", "B"}, 1.1, 180)
+      bond_t.typename_permutations.should eq [
+        {"A", "B"},
+        {"B", "A"},
+      ]
+    end
+  end
 end
 
 describe MM::AngleType do
@@ -98,6 +108,16 @@ describe MM::AngleType do
       (angle_t === {"C", "B", "A"}).should be_true
       (angle_t === {"B", "A", "C"}).should be_false
       (angle_t === {"A", "C", "D"}).should be_false
+    end
+  end
+
+  describe "#typename_permutations" do
+    it "returns all permutations of the typenames" do
+      angle_t = MM::AngleType.new({"A", "B", "C"}, 1.1, 180)
+      angle_t.typename_permutations.should eq [
+        {"A", "B", "C"},
+        {"C", "B", "A"},
+      ]
     end
   end
 end
@@ -178,6 +198,16 @@ describe MM::DihedralType do
       (dihedral_t === {nil, "B", "C", nil}).should be_true
       (dihedral_t === {nil, "C", "B", nil}).should be_true
       (dihedral_t === {nil, "B", "D", nil}).should be_false
+    end
+  end
+
+  describe "#typename_permutations" do
+    it "returns all permutations of the typenames" do
+      dihedral_t = MM::DihedralType.new({"A", "B", "C", "D"}, 2, 1.1, 180)
+      dihedral_t.typename_permutations.should eq [
+        {"A", "B", "C", "D"},
+        {"D", "C", "B", "A"},
+      ]
     end
   end
 end
@@ -276,6 +306,20 @@ describe MM::ImproperType do
       (improper_t === {"A", nil, nil, "D"}).should be_true
       (improper_t === {"D", nil, nil, "A"}).should be_false
       (improper_t === {"A", nil, nil, "C"}).should be_false
+    end
+  end
+
+  describe "#typename_permutations" do
+    it "returns all permutations of the typenames" do
+      improper_t = MM::ImproperType.new({"A", "B", "C", "D"}, 1.1, 180)
+      improper_t.typename_permutations.should eq [
+        {"A", "B", "C", "D"},
+        {"A", "B", "D", "C"},
+        {"C", "B", "A", "D"},
+        {"C", "B", "D", "A"},
+        {"D", "B", "A", "C"},
+        {"D", "B", "C", "A"},
+      ]
     end
   end
 end
