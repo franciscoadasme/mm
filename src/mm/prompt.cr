@@ -16,8 +16,10 @@ module MM
         puts "No matching paramater found"
         prompt_exit
       when 1
-        puts "Found match #{matching_params.first_key.join('-')}"
-        matching_params.first_value
+        param = matching_params[0]
+        param = param[0] if param.is_a?(Array)
+        puts "Found match #{param.typenames.join('-')}"
+        matching_params[0]
       else
         prompt_match(matching_params)
       end
@@ -40,10 +42,11 @@ private def prompt_exit : Nil
   end
 end
 
-private def prompt_match(params : Hash(K, V)) : V forall K, V
+private def prompt_match(params : Array(V)) : V forall V
   puts "Found matches:"
-  params.keys.each_with_index(offset: 1) do |typenames, i|
-    puts "  #{i}. #{typenames.join('-')}"
+  params.each_with_index(offset: 1) do |param, i|
+    param = param.is_a?(Array) ? param[0] : param
+    puts "  #{i}. #{param.typenames.join('-')}"
   end
 
   selected_i = nil
