@@ -17,7 +17,7 @@ module MM
         prompt_exit
       when 1
         param = matching_params[0]
-        param = param[0] if param.is_a?(Array)
+        param = param[0] unless param.is_a?(MM::ParameterType)
         puts "Found match #{param.typenames.join('-')}"
         matching_params[0]
       else
@@ -45,7 +45,7 @@ end
 private def prompt_match(params : Array(V)) : V forall V
   puts "Found matches:"
   params.each_with_index(offset: 1) do |param, i|
-    param = param.is_a?(Array) ? param[0] : param
+    param = param.is_a?(MM::ParameterType) ? param : param[0]
     puts "  #{i}. #{param.typenames.join('-')}"
   end
 
