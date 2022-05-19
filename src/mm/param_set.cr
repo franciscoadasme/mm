@@ -37,26 +37,23 @@ class MM::ParameterSet
     params
   end
 
-  {% for name in %w(angle atom bond improper patch residue).map(&.id) %}
-    {% type = (name == "patch" ? "Patch" : "#{name.camelcase}Type").id %}
-    {% plural_name = (name == "patch" ? "patches" : "#{name}s").id %}
+  {% for name in %w(angle atom bond improper patch residue) %}
+    {% type = (name == "patch" ? "Patch" : "#{name.camelcase.id}Type") %}
+    {% plural_name = (name == "patch" ? "patches" : "#{name.id}s") %}
+    {% key = %w(atom patch residue).includes?(name) ? "name" : "typenames" %}
 
-    def <<({{name}}_t : {{type}}) : self
-      if i = index({{name}}_t)
-        @{{plural_name}}[i] = {{name}}_t
+    def <<({{name.id}}_t : {{type.id}}) : self
+      if i = @{{plural_name.id}}.index(&.==({{name.id}}_t.{{key.id}}))
+        @{{plural_name.id}}[i] = {{name.id}}_t
       else
-        @{{plural_name}} << {{name}}_t
+        @{{plural_name.id}} << {{name.id}}_t
       end
       self
-    end
-
-    def index({{name}}_t : {{type}}) : Int32?
-      @{{plural_name}}.index &.===({{name}}_t)
     end
   {% end %}
 
   def <<(dihedral_t : DihedralType) : self
-    if i = index(dihedral_t)
+    if i = @dihedrals.index(&.[0].==(dihedral_t.typenames))
       @dihedrals[i] << dihedral_t
     else
       @dihedrals << [dihedral_t]
@@ -65,7 +62,7 @@ class MM::ParameterSet
   end
 
   def <<(dihedral_types : Array(DihedralType)) : self
-    if i = index(dihedral_types)
+    if i = @dihedrals.index(&.[0].==(dihedral_types[0].typenames))
       @dihedrals[i] = dihedral_t
     else
       @dihedrals << dihedral_t
@@ -151,17 +148,6 @@ class MM::ParameterSet
 
   def impropers : Array::View(ImproperType)
     @impropers.view
-  end
-
-  def index(dihedral_t : DihedralType) : Int32?
-    @dihedrals.index &.first.===(dihedral_t)
-  end
-
-  def index(dihedral_types : Array(DihedralType)) : Int32?
-    if dihedrals.map(&.typenames).uniq!
-      raise ArgumentError.new("Dihedrals have different atom types")
-    end
-    index dihedral_types.first
   end
 
   def patch?(name : String) : Patch?

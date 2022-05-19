@@ -38,8 +38,8 @@ describe MM::ParameterSet do
 
       params = MM::ParameterSet.new
       params << bond
-      params.bond?({"A", "B"}).should eq bond
-      params.bond?({"B", "A"}).should eq bond
+      params.bonds.size.should eq 1
+      params.bonds[0].should eq bond
     end
 
     it "appends an angle" do
@@ -47,8 +47,8 @@ describe MM::ParameterSet do
 
       params = MM::ParameterSet.new
       params << angle
-      params.angle?({"A", "B", "C"}).should eq angle
-      params.angle?({"C", "B", "A"}).should eq angle
+      params.angles.size.should eq 1
+      params.angles[0].should eq angle
     end
 
     it "appends a dihedral" do
@@ -57,12 +57,12 @@ describe MM::ParameterSet do
 
       params = MM::ParameterSet.new
       params << dihedral2
-      params.dihedral?({"A", "B", "C", "D"}).should eq [dihedral2]
-      params.dihedral?({"D", "C", "B", "A"}).should eq [dihedral2]
+      params.dihedrals.size.should eq 1
+      params.dihedrals[0].should eq [dihedral2]
 
       params << dihedral3
-      params.dihedral?({"A", "B", "C", "D"}).should eq [dihedral2, dihedral3]
-      params.dihedral?({"D", "C", "B", "A"}).should eq [dihedral2, dihedral3]
+      params.dihedrals.size.should eq 1
+      params.dihedrals[0].should eq [dihedral2, dihedral3]
     end
 
     it "appends an improper" do
@@ -70,12 +70,8 @@ describe MM::ParameterSet do
 
       params = MM::ParameterSet.new
       params << improper
-      params.improper?({"A", "B", "C", "D"}).should eq improper
-      params.improper?({"A", "B", "D", "C"}).should eq improper
-      params.improper?({"C", "B", "A", "D"}).should eq improper
-      params.improper?({"C", "B", "D", "A"}).should eq improper
-      params.improper?({"D", "B", "A", "C"}).should eq improper
-      params.improper?({"D", "B", "C", "A"}).should eq improper
+      params.impropers.size.should eq 1
+      params.impropers[0].should eq improper
     end
   end
 
@@ -134,27 +130,23 @@ describe MM::ParameterSet do
     end
   end
 
-  describe "#dihedrals" do
-    describe "#[]?" do
-      it "returns a dihedral with wildcards" do
-        dihedral_t = MM::DihedralType.new({nil, "B", "C", nil}, 2, 1.1, 180)
-        params = MM::ParameterSet.new
-        params << dihedral_t
-        params.dihedral?({"A", "B", "C", "D"}).should eq [dihedral_t]
-        params.dihedral?({"Y", "B", "C", "Z"}).should eq [dihedral_t]
-      end
+  describe "#dihedral?" do
+    it "returns a dihedral with wildcards" do
+      dihedral_t = MM::DihedralType.new({nil, "B", "C", nil}, 2, 1.1, 180)
+      params = MM::ParameterSet.new
+      params << dihedral_t
+      params.dihedral?({"A", "B", "C", "D"}).should eq [dihedral_t]
+      params.dihedral?({"Y", "B", "C", "Z"}).should eq [dihedral_t]
     end
   end
 
-  describe "#impropers" do
-    describe "#[]?" do
-      it "returns an improper with wildcards" do
-        improper_t = MM::ImproperType.new({"A", nil, nil, "D"}, 1.1, 180)
-        params = MM::ParameterSet.new
-        params << improper_t
-        params.improper?({"A", "B", "C", "D"}).should eq improper_t
-        params.improper?({"A", "Y", "Z", "D"}).should eq improper_t
-      end
+  describe "#improper?" do
+    it "returns an improper with wildcards" do
+      improper_t = MM::ImproperType.new({"A", nil, nil, "D"}, 1.1, 180)
+      params = MM::ParameterSet.new
+      params << improper_t
+      params.improper?({"A", "B", "C", "D"}).should eq improper_t
+      params.improper?({"A", "Y", "Z", "D"}).should eq improper_t
     end
   end
 end

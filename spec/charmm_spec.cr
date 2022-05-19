@@ -56,7 +56,7 @@ describe MM::CHARMM do
       angle.penalty.should eq 264.5
       angle.comment.should eq "protonated C-terminal Gly, adm jr."
 
-      params.dihedrals.size.should eq 793
+      params.dihedrals.size.should eq 817
 
       dihedrals = params.dihedral?({nil, "C145", "C145", nil}).should_not be_nil
       dihedrals.size.should eq 1
