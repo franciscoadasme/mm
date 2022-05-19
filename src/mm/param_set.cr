@@ -72,7 +72,7 @@ class MM::ParameterSet
 
   {% for type in %w(bond angle dihedral improper).map(&.id) %}
     {% return_type = "#{type.camelcase}Type".id %}
-    {% return_type = "Array(#{return_type})" if type == "dihedral" %}
+    {% return_type = "Array::View(#{return_type})" if type == "dihedral" %}
 
     # Returns the {{type}} parameter type associated with *{{type}}*.
     # Raises `KeyError` if the parameter does not exists.
@@ -134,8 +134,8 @@ class MM::ParameterSet
     missing_params.values
   end
 
-  def dihedral?(typenames : {String?, String, String, String?}) : Array(DihedralType)?
-    @dihedrals.find &.first.===(typenames)
+  def dihedral?(typenames : {String?, String, String, String?}) : Array::View(DihedralType)?
+    @dihedrals.find(&.first.===(typenames)).try(&.view)
   end
 
   def dihedrals : Array::View(Array(DihedralType))
