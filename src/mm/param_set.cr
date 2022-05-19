@@ -63,9 +63,9 @@ class MM::ParameterSet
 
   def <<(dihedral_types : Array(DihedralType)) : self
     if i = @dihedrals.index(&.[0].==(dihedral_types[0].typenames))
-      @dihedrals[i] = dihedral_t
+      @dihedrals[i] = dihedral_types
     else
-      @dihedrals << dihedral_t
+      @dihedrals << dihedral_types
     end
     self
   end
