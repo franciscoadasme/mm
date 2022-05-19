@@ -128,6 +128,18 @@ describe MM::ParameterSet do
       dihedral_types.size.should eq 1
       dihedral_types[0][0].typenames.should eq({"C136", "C224", "C235", "O236"})
     end
+
+    it "searches for a reversed dihedral" do
+      topology = Chem::Topology.read "spec/data/5yok_initial.psf"
+      params = MM::ParameterSet.from_charmm(
+        "spec/data/top_opls_aam_M.inp",
+        "spec/data/par_opls_aam_M.inp")
+      dihedral = Chem::Dihedral[*topology.atoms[{11, 10, 8, 28}]]
+      dihedral_types = params.fuzzy_search(dihedral)
+      dihedral_types.should_not be_empty
+      dihedral_types.size.should eq 1
+      dihedral_types[0][0].typenames.should eq({"C235", "C224", "C136", "H140"})
+    end
   end
 
   describe "#dihedral?" do

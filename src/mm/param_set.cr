@@ -94,13 +94,15 @@ class MM::ParameterSet
         end
 
         @{{name.id}}s.select do |{{name.id}}|
-          {{name.id}}{% if name == "dihedral" %}[0]{% end %}.typenames.zip(pattern).all? { |typename, atom_pattern|
-            if atom_type = typename.try { |typename| atom?(typename) }
-              atom_type.matches?(atom_pattern)
-            else # nil signals any atom (wildcard)
-              true
-            end
-          }
+          {{name.id}}{% if name == "dihedral" %}[0]{% end %}.typename_permutations.any? do |typenames|
+            typenames.zip(pattern).all? { |typename, atom_pattern|
+              if atom_type = typename.try { |typename| atom?(typename) }
+                atom_type.matches?(atom_pattern)
+              else # nil signals any atom (wildcard)
+                true
+              end
+            }
+          end
         end{% if name == "dihedral" %}.map(&.view){% end %}
       end
     {% end %}
