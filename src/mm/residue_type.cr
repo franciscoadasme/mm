@@ -17,6 +17,10 @@ class MM::ResidueType
   )
   end
 
+  def <=>(rhs : self) : Int32
+    @name <=> rhs.name
+  end
+
   def atoms : Hash::View(String, AtomRecord)
     @atoms.view
   end

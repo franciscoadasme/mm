@@ -9,6 +9,10 @@ class MM::Patch
   )
   end
 
+  def <=>(rhs : self) : Int32
+    @name <=> rhs.name
+  end
+
   def atoms : Hash::View(String, ResidueType::AtomRecord)
     @atoms.view
   end

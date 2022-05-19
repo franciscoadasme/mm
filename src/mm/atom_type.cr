@@ -16,6 +16,10 @@ class MM::AtomType
   )
   end
 
+  def <=>(rhs : self) : Int32
+    @name <=> rhs.name
+  end
+
   def matches?(pattern : Chem::Element | String) : Bool
     case pattern
     in Chem::Element
