@@ -84,8 +84,8 @@ module MM::CHARMM
               epsilon14 = epsilon14.to_f? || raise "Invalid epsilon"
               rmin14 = rmin14.to_f?.try(&.*(2)) || raise "Invalid Rmin"
               if atom_type = params.atom?(typename)
-                atom_type.lj = LennardJones.new(epsilon, rmin, comment)
-                atom_type.lj14 = LennardJones.new(epsilon14, rmin14, comment)
+                atom_type.lj = LennardJones.new(epsilon, rmin, penalty, comment)
+                atom_type.lj14 = LennardJones.new(epsilon14, rmin14, penalty, comment)
               else
                 raise "Unknown atom type #{typename}"
               end

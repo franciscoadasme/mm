@@ -1,5 +1,9 @@
 module MM
-  record LennardJones, epsilon : Float64, rmin : Float64, comment : String?
+  record LennardJones,
+    epsilon : Float64,
+    rmin : Float64,
+    penalty : Float64 = 0.0,
+    comment : String? = nil
 
   abstract struct ParameterType(*T)
     getter force_constant : Float64
