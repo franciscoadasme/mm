@@ -102,4 +102,78 @@ describe MM::CHARMM do
       lj.rmin.should eq 4.5122974
     end
   end
+
+  describe ".write_prm" do
+    it "writes parameters" do
+      params = MM::ParameterSet.new
+      params << MM::AtomType.new(
+        "C",
+        Chem::PeriodicTable::C,
+        mass: 12.011,
+        lj: MM::LennardJones.new(-0.11, 4, 65.21, "ALLOW   PEP POL ARO"),
+        comment: "carbonyl C, peptide backbone")
+      params << MM::AtomType.new(
+        "HA",
+        Chem::PeriodicTable::H,
+        mass: 1.008,
+        lj: MM::LennardJones.new(-0.022, 2.64, 0, "ALLOW PEP ALI POL SUL ARO PRO ALC"),
+        comment: "nonpolar H")
+      params << MM::AtomType.new(
+        "H",
+        Chem::PeriodicTable::H,
+        mass: 1.008,
+        lj: MM::LennardJones.new(-0.046, 0.449, 0, "ALLOW PEP POL SUL ARO ALC"),
+        comment: "polar H")
+      params << MM::AtomType.new(
+        "CP1",
+        Chem::PeriodicTable::C,
+        mass: 12.011,
+        lj: MM::LennardJones.new(-0.02, 4.55),
+        lj14: MM::LennardJones.new(-0.01, 3.8),
+        comment: "tetrahedral C (proline CA)")
+      params << MM::BondType.new({"C", "CP1"}, 250.0, 1.49, 264.5, "ALLOW PRO")
+      params << MM::AngleType.new({"C", "CP1", "H"}, 50, 111)
+      params << MM::DihedralType.new({nil, "CP1", "CP1", nil}, 2, 3.625, 180)
+      params << MM::DihedralType.new({"C", "CP1", "H", "C"}, 1, 0.65, 0)
+      params << MM::DihedralType.new({"C", "CP1", "H", "C"}, 2, -0.1, 180)
+      params << MM::DihedralType.new({"C", "CP1", "H", "C"}, 3, 0.1, 0)
+      params << MM::ImproperType.new({"C", "CP1", "C", "H"}, 1.1, 180)
+
+      io = IO::Memory.new
+      MM::CHARMM.write_parameters(io, params)
+      io.to_s.should eq <<-PRM
+        ATOMS
+        MASS     1 C       12.01100 ! carbonyl C, peptide backbone
+        MASS     2 CP1     12.01100 ! tetrahedral C (proline CA)
+        MASS     3 H        1.00800 ! polar H
+        MASS     4 HA       1.00800 ! nonpolar H
+
+        BONDS
+        C     CP1    250.00    1.4900 ! ALLOW PRO penalty= 264.5
+
+        ANGLES
+        C     CP1   H       50.00  111.00
+
+        DIHEDRALS
+        X     CP1   CP1   X          3.6250 2  180.00
+        C     CP1   H     C          0.6500 1    0.00
+        C     CP1   H     C         -0.1000 2  180.00
+        C     CP1   H     C          0.1000 3    0.00
+
+        IMPROPERS
+        C     CP1   C     H          1.1000 0  180.00
+
+        NONBONDED nbxmod  5 atom cdiel shift vatom vdistance vswitch -
+        cutnb 14.0 ctofnb 12.0 ctonnb 10.0 eps 1.0 e14fac 1.0 wmin 1.5
+
+        C       0.00 -0.110000      2.000000 ! ALLOW   PEP POL ARO penalty=  65.2
+        CP1     0.00 -0.020000      2.275000  0.00 -0.010000      1.900000
+        H       0.00 -0.046000      0.224500 ! ALLOW PEP POL SUL ARO ALC
+        HA      0.00 -0.022000      1.320000 ! ALLOW PEP ALI POL SUL ARO PRO ALC
+
+        END
+
+        PRM
+    end
+  end
 end

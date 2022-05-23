@@ -202,4 +202,85 @@ module MM::CHARMM
       load_topology params, topfile
     end
   end
+
+  def self.write_parameters(path : Path | String, params : ParameterSet) : Nil
+    File.open(path, "w") do |io|
+      write_prm(io, params)
+    end
+  end
+
+  def self.write_parameters(io : IO, params : ParameterSet) : Nil
+    io.puts "ATOMS"
+    params.atoms.to_a.sort!.each_with_index(1) do |atom_t, i|
+      io.printf "MASS %5d %-6s %9.5f",
+        i, atom_t.name, atom_t.mass, atom_t.element.symbol
+      io << " ! " << atom_t.comment if atom_t.comment
+      io.puts
+    end
+    io.puts
+
+    io.puts "BONDS"
+    params.bonds.to_a.sort!.each do |bond_t|
+      io.printf "%-6s%-6s%7.2f%10.4f",
+        *bond_t.typenames, bond_t.force_constant, bond_t.eq_value
+      write_parameter_comment io, bond_t
+      io.puts
+    end
+    io.puts
+
+    io.puts "ANGLES"
+    params.angles.to_a.sort!.each do |angle_t|
+      io.printf "%-6s%-6s%-6s%7.2f%8.2f",
+        *angle_t.typenames, angle_t.force_constant, angle_t.eq_value
+      write_parameter_comment io, angle_t
+      io.puts
+    end
+    io.puts
+
+    io.puts "DIHEDRALS"
+    params.dihedrals.to_a.sort_by!(&.first).each do |dihedral_types|
+      dihedral_types.each do |tor|
+        io.printf "%-6s%-6s%-6s%-6s%11.4f%2d%8.2f",
+          *tor.typenames.map { |x| x || 'X' }, tor.force_constant, tor.multiplicity, tor.eq_value
+        write_parameter_comment io, tor
+        io.puts
+      end
+    end
+    io.puts
+
+    io.puts "IMPROPERS"
+    params.impropers.to_a.sort!.each do |improper_t|
+      io.printf "%-6s%-6s%-6s%-6s%11.4f%2d%8.2f",
+        *improper_t.typenames, improper_t.force_constant, 0, improper_t.eq_value
+      write_parameter_comment io, improper_t
+      io.puts
+    end
+    io.puts
+
+    comb_rule = nil # " GEOM" if params.combining_rule.geometric?
+    scee = 1.0
+    io.puts "NONBONDED nbxmod  5 atom cdiel shift vatom vdistance vswitch -\n\
+             cutnb 14.0 ctofnb 12.0 ctonnb 10.0 eps 1.0 e14fac #{1/scee} \
+             wmin 1.5#{comb_rule}"
+    io.puts
+    params.atoms.each do |atom_t|
+      next unless lj = atom_t.lj
+      io.printf "%-6s%6.2f%10.6f%14.6f",
+        atom_t.name, 0, lj.epsilon, lj.rmin * 0.5
+      if lj14 = atom_t.lj14
+        io.printf "%6.2f%10.6f%14.6f", 0, lj14.epsilon, lj14.rmin * 0.5
+      end
+      write_parameter_comment io, lj
+      io.puts
+    end
+    io.puts
+
+    io.puts "END"
+  end
+
+  private def self.write_parameter_comment(io, param)
+    io << " !" if param.comment || param.penalty != 0.0
+    param.comment.try { |comment| io << ' ' << comment }
+    io.printf " penalty=%6.1f", param.penalty if param.penalty != 0.0
+  end
 end

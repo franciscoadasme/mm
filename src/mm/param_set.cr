@@ -169,4 +169,8 @@ class MM::ParameterSet
   def residue?(name : String) : ResidueType?
     @residues.find &.name.==(name.upcase)
   end
+
+  def to_prm(output : IO | Path | String) : Nil
+    CHARMM.write_parameters(output, self)
+  end
 end
