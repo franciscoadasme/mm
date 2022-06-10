@@ -73,6 +73,14 @@ describe MM::ParameterSet do
       params.impropers.size.should eq 1
       params.impropers[0].should eq improper
     end
+
+    it "appends an array of dihedrals (#1)" do
+      params = MM::ParameterSet.new
+      params << [MM::DihedralType.new({"A", "B", "C", "D"}, 2, 1.1, 180)]
+      params.dihedrals.size.should eq 1
+      params << params.dihedrals[0]
+      params.dihedrals.size.should eq 1
+    end
   end
 
   describe "#detect_missing" do

@@ -117,11 +117,11 @@ class MM::ParameterSet
     self
   end
 
-  def <<(dihedral_types : Array(DihedralType)) : self
+  def <<(dihedral_types : Enumerable(DihedralType)) : self
     if i = @dihedrals.index(&.[0].==(dihedral_types[0].typenames))
-      @dihedrals[i] = dihedral_types
+      @dihedrals[i] = dihedral_types.to_a
     else
-      @dihedrals << dihedral_types
+      @dihedrals << dihedral_types.to_a
     end
     self
   end
