@@ -1,6 +1,6 @@
 module MM
   {% for type in %w(bond angle dihedral improper).map(&.id) %}
-    {% return_type = type == "dihedral" ? Array::View(DihedralType) : "#{type.camelcase}Type".id %}
+    {% return_type = "#{type.camelcase}Type".id %}
     def self.prompt_matching_param(
       params : ParameterSet,
       conn : Chem::{{type.camelcase}}

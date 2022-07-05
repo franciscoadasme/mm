@@ -14,13 +14,11 @@ describe MM::ParameterType do
     end
 
     it "copies a dihedral type" do
-      dihedral_t = MM::DihedralType.new({"A", "B", "C", "D"}, 2, 1.1, 180)
-      other = dihedral_t.copy_with(multiplicity: 1)
+      dihedral_t = MM::DihedralType.new({"A", "B", "C", "D"}, [MM::Phase.new(1.1, 2, 180)])
+      other = dihedral_t.copy_with({"A", "C", "B", "D"})
       other.should be_a MM::DihedralType
-      other.typenames.should eq dihedral_t.typenames
-      other.multiplicity.should eq 1
-      other.force_constant.should eq dihedral_t.force_constant
-      other.eq_value.should eq dihedral_t.eq_value
+      other.typenames.should eq({"A", "C", "B", "D"})
+      other.phases[0].should eq dihedral_t.phases[0]
       other.penalty.should eq dihedral_t.penalty
       other.comment.should eq dihedral_t.comment
     end
@@ -125,31 +123,31 @@ end
 describe MM::DihedralType do
   describe "#==" do
     it "compares with a dihedral type" do
-      dihedral_t = MM::DihedralType.new({"A", "B", "C", "D"}, 2, 1.1, 180)
+      dihedral_t = MM::DihedralType.new({"A", "B", "C", "D"}, [MM::Phase.new(1.1, 2, 180)])
       dihedral_t.should eq dihedral_t
-      dihedral_t.should eq MM::DihedralType.new({"D", "C", "B", "A"}, 2, 1.1, 180)
-      dihedral_t.should_not eq MM::DihedralType.new({"A", "C", "D", "E"}, 2, 1.1, 180)
-      dihedral_t.should_not eq MM::DihedralType.new({"A", "B", "C", "D"}, 1, 1.5, 180)
-      dihedral_t.should_not eq MM::DihedralType.new({nil, "B", "C", nil}, 1, 1.5, 180)
+      dihedral_t.should eq MM::DihedralType.new({"D", "C", "B", "A"}, [MM::Phase.new(1.1, 2, 180)])
+      dihedral_t.should_not eq MM::DihedralType.new({"A", "C", "D", "E"}, [MM::Phase.new(1.1, 2, 180)])
+      dihedral_t.should_not eq MM::DihedralType.new({"A", "B", "C", "D"}, [MM::Phase.new(1.5, 1, 180)])
+      dihedral_t.should_not eq MM::DihedralType.new({nil, "B", "C", nil}, [MM::Phase.new(1.5, 1, 180)])
 
-      dihedral_t = MM::DihedralType.new({nil, "B", "C", nil}, 2, 1.1, 180)
+      dihedral_t = MM::DihedralType.new({nil, "B", "C", nil}, [MM::Phase.new(1.1, 2, 180)])
       dihedral_t.should eq dihedral_t
-      dihedral_t.should eq MM::DihedralType.new({nil, "C", "B", nil}, 2, 1.1, 180)
-      dihedral_t.should_not eq MM::DihedralType.new({"A", "B", "C", "D"}, 2, 1.1, 180)
-      dihedral_t.should_not eq MM::DihedralType.new({"D", "C", "B", "A"}, 2, 1.1, 180)
-      dihedral_t.should_not eq MM::DihedralType.new({"A", "C", "D", "E"}, 2, 1.1, 180)
-      dihedral_t.should_not eq MM::DihedralType.new({"A", "B", "C", "D"}, 1, 1.5, 180)
-      dihedral_t.should_not eq MM::DihedralType.new({nil, "B", "C", nil}, 1, 1.5, 180)
+      dihedral_t.should eq MM::DihedralType.new({nil, "C", "B", nil}, [MM::Phase.new(1.1, 2, 180)])
+      dihedral_t.should_not eq MM::DihedralType.new({"A", "B", "C", "D"}, [MM::Phase.new(1.1, 2, 180)])
+      dihedral_t.should_not eq MM::DihedralType.new({"D", "C", "B", "A"}, [MM::Phase.new(1.1, 2, 180)])
+      dihedral_t.should_not eq MM::DihedralType.new({"A", "C", "D", "E"}, [MM::Phase.new(1.1, 2, 180)])
+      dihedral_t.should_not eq MM::DihedralType.new({"A", "B", "C", "D"}, [MM::Phase.new(1.5, 1, 180)])
+      dihedral_t.should_not eq MM::DihedralType.new({nil, "B", "C", nil}, [MM::Phase.new(1.5, 1, 180)])
     end
 
     it "compares with typenames" do
-      dihedral_t = MM::DihedralType.new({"A", "B", "C", "D"}, 2, 1.1, 180)
+      dihedral_t = MM::DihedralType.new({"A", "B", "C", "D"}, [MM::Phase.new(1.1, 2, 180)])
       dihedral_t.should eq({"A", "B", "C", "D"})
       dihedral_t.should eq({"D", "C", "B", "A"})
       dihedral_t.should_not eq({"A", "C", "D", "E"})
       dihedral_t.should_not eq({nil, "B", "C", nil})
 
-      dihedral_t = MM::DihedralType.new({nil, "B", "C", nil}, 2, 1.1, 180)
+      dihedral_t = MM::DihedralType.new({nil, "B", "C", nil}, [MM::Phase.new(1.1, 2, 180)])
       dihedral_t.should eq({nil, "B", "C", nil})
       dihedral_t.should eq({nil, "C", "B", nil})
       dihedral_t.should_not eq({"A", "B", "C", "D"})
@@ -160,28 +158,28 @@ describe MM::DihedralType do
 
   describe "#===" do
     it "compares with a dihedral type" do
-      dihedral_t = MM::DihedralType.new({"A", "B", "C", "D"}, 2, 1.1, 180)
+      dihedral_t = MM::DihedralType.new({"A", "B", "C", "D"}, [MM::Phase.new(1.1, 2, 180)])
       (dihedral_t === dihedral_t).should be_true
-      (dihedral_t === MM::DihedralType.new({"D", "C", "B", "A"}, 2, 1.1, 180)).should be_true
-      (dihedral_t === MM::DihedralType.new({"A", "C", "D", "E"}, 2, 1.1, 180)).should be_false
-      (dihedral_t === MM::DihedralType.new({"A", "B", "C", "D"}, 1, 1.5, 180)).should be_true
-      (dihedral_t === MM::DihedralType.new({nil, "B", "C", nil}, 2, 1.1, 180)).should be_true
-      (dihedral_t === MM::DihedralType.new({nil, "C", "B", nil}, 2, 1.1, 180)).should be_true
-      (dihedral_t === MM::DihedralType.new({nil, "B", "D", nil}, 2, 1.1, 180)).should be_false
+      (dihedral_t === MM::DihedralType.new({"D", "C", "B", "A"}, [MM::Phase.new(1.1, 2, 180)])).should be_true
+      (dihedral_t === MM::DihedralType.new({"A", "C", "D", "E"}, [MM::Phase.new(1.1, 2, 180)])).should be_false
+      (dihedral_t === MM::DihedralType.new({"A", "B", "C", "D"}, [MM::Phase.new(1.5, 1, 180)])).should be_true
+      (dihedral_t === MM::DihedralType.new({nil, "B", "C", nil}, [MM::Phase.new(1.1, 2, 180)])).should be_true
+      (dihedral_t === MM::DihedralType.new({nil, "C", "B", nil}, [MM::Phase.new(1.1, 2, 180)])).should be_true
+      (dihedral_t === MM::DihedralType.new({nil, "B", "D", nil}, [MM::Phase.new(1.1, 2, 180)])).should be_false
 
-      dihedral_t = MM::DihedralType.new({nil, "B", "C", nil}, 2, 1.1, 180)
+      dihedral_t = MM::DihedralType.new({nil, "B", "C", nil}, [MM::Phase.new(1.1, 2, 180)])
       (dihedral_t === dihedral_t).should be_true
-      (dihedral_t === MM::DihedralType.new({nil, "B", "C", nil}, 2, 1.1, 180)).should be_true
-      (dihedral_t === MM::DihedralType.new({nil, "B", "C", nil}, 1, 1.5, 180)).should be_true
-      (dihedral_t === MM::DihedralType.new({nil, "C", "B", nil}, 2, 1.1, 180)).should be_true
-      (dihedral_t === MM::DihedralType.new({"A", "B", "C", "D"}, 2, 1.1, 180)).should be_true
-      (dihedral_t === MM::DihedralType.new({"D", "C", "B", "A"}, 2, 1.1, 180)).should be_true
-      (dihedral_t === MM::DihedralType.new({nil, "B", "D", nil}, 2, 1.1, 180)).should be_false
-      (dihedral_t === MM::DihedralType.new({"A", "C", "D", "E"}, 2, 1.1, 180)).should be_false
+      (dihedral_t === MM::DihedralType.new({nil, "B", "C", nil}, [MM::Phase.new(1.1, 2, 180)])).should be_true
+      (dihedral_t === MM::DihedralType.new({nil, "B", "C", nil}, [MM::Phase.new(1.5, 1, 180)])).should be_true
+      (dihedral_t === MM::DihedralType.new({nil, "C", "B", nil}, [MM::Phase.new(1.1, 2, 180)])).should be_true
+      (dihedral_t === MM::DihedralType.new({"A", "B", "C", "D"}, [MM::Phase.new(1.1, 2, 180)])).should be_true
+      (dihedral_t === MM::DihedralType.new({"D", "C", "B", "A"}, [MM::Phase.new(1.1, 2, 180)])).should be_true
+      (dihedral_t === MM::DihedralType.new({nil, "B", "D", nil}, [MM::Phase.new(1.1, 2, 180)])).should be_false
+      (dihedral_t === MM::DihedralType.new({"A", "C", "D", "E"}, [MM::Phase.new(1.1, 2, 180)])).should be_false
     end
 
     it "compares with typenames" do
-      dihedral_t = MM::DihedralType.new({"A", "B", "C", "D"}, 2, 1.1, 180)
+      dihedral_t = MM::DihedralType.new({"A", "B", "C", "D"}, [MM::Phase.new(1.1, 2, 180)])
       (dihedral_t === {"A", "B", "C", "D"}).should be_true
       (dihedral_t === {"D", "C", "B", "A"}).should be_true
       (dihedral_t === {"B", "A", "D", "C"}).should be_false
@@ -190,7 +188,7 @@ describe MM::DihedralType do
       (dihedral_t === {nil, "C", "B", nil}).should be_true
       (dihedral_t === {nil, "B", "D", nil}).should be_false
 
-      dihedral_t = MM::DihedralType.new({nil, "B", "C", nil}, 2, 1.1, 180)
+      dihedral_t = MM::DihedralType.new({nil, "B", "C", nil}, [MM::Phase.new(1.1, 2, 180)])
       (dihedral_t === {"A", "B", "C", "D"}).should be_true
       (dihedral_t === {"D", "C", "B", "A"}).should be_true
       (dihedral_t === {"B", "A", "D", "C"}).should be_false
@@ -203,7 +201,7 @@ describe MM::DihedralType do
 
   describe "#typename_permutations" do
     it "returns all permutations of the typenames" do
-      dihedral_t = MM::DihedralType.new({"A", "B", "C", "D"}, 2, 1.1, 180)
+      dihedral_t = MM::DihedralType.new({"A", "B", "C", "D"}, [MM::Phase.new(1.1, 2, 180)])
       dihedral_t.typename_permutations.should eq [
         {"A", "B", "C", "D"},
         {"D", "C", "B", "A"},

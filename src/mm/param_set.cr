@@ -4,7 +4,7 @@ class MM::ParameterSet
   @angles = {} of {String, String, String} => AngleType
   @atoms = {} of String => AtomType
   @bonds = {} of {String, String} => BondType
-  @dihedrals = {} of {String?, String, String, String?} => Array(DihedralType)
+  @dihedrals = {} of {String?, String, String, String?} => DihedralType
   @impropers = {} of {String, String?, String?, String} => ImproperType
   @patches = {} of String => Patch
   @residues = {} of String => ResidueType
@@ -37,9 +37,9 @@ class MM::ParameterSet
     {% plural_name = (name == "patch" ? "patches" : "#{name.id}s") %}
     {% type = (name == "patch" ? "Patch" : "#{name.camelcase.id}Type") %}
     {% key = %w(atom patch residue).includes?(name) ? "name" : "typenames" %}
-    {% return_type = name == "dihedral" ? "Array::View(#{type.id})" : type %}
+    {% return_type = type %}
 
-    def {{plural_name.id}} : Array::View
+    def {{plural_name.id}} : Array::View({{type.id}})
       @{{plural_name.id}}.values.uniq!.view
     end
 
@@ -89,7 +89,7 @@ class MM::ParameterSet
 
         {{name.id}}_types = Set({{return_type.id}}).new
         @{{plural_name.id}}.each_value do |{{name.id}}_t|
-          matches = {{name.id}}_t{% if name == "dihedral" %}[0]{% end %}.typename_permutations.any? do |typenames|
+          matches = {{name.id}}_t.typename_permutations.any? do |typenames|
             typenames.zip(pattern).all? { |typename, atom_pattern|
               if atom_type = typename.try { |typename| atom?(typename) }
                 atom_type.matches?(atom_pattern)
@@ -98,7 +98,7 @@ class MM::ParameterSet
               end
             }
           end
-          {{name.id}}_types << {{name.id}}_t{% if name == "dihedral" %}.view{% end %} if matches
+          {{name.id}}_types << {{name.id}}_t if matches
         end
         {{name.id}}_types.to_a.sort!
       end
@@ -109,25 +109,6 @@ class MM::ParameterSet
       end
     {% end %}
   {% end %}
-
-  def <<(dihedral_t : DihedralType) : self
-    dihedral_t.each_typename_permutation do |typenames|
-      @dihedrals[typenames] ||= [] of DihedralType
-      @dihedrals[typenames] << dihedral_t unless dihedral_t.in?(@dihedrals[typenames])
-    end
-    self
-  end
-
-  def <<(dihedral_types : Indexable(DihedralType)) : self
-    size = dihedral_types.size
-    dihedral_types[0].each_typename_permutation do |typenames|
-      @dihedrals[typenames] ||= [] of DihedralType
-      dihedral_types.each(within: ...size) do |dihedral_t|
-        @dihedrals[typenames] << dihedral_t
-      end
-    end
-    self
-  end
 
   def angle?(typenames : {String, String, String}) : AngleType?
     @angles[typenames]?
@@ -153,26 +134,22 @@ class MM::ParameterSet
     missing_params.values
   end
 
-  def dihedral?(typenames : {String, String, String, String}) : Array::View(DihedralType)?
+  def dihedral?(typenames : {String?, String, String, String?}) : DihedralType?
     if dihedral_t = @dihedrals[typenames]?
-      dihedral_t.view
+      dihedral_t
     else
       typenames = {nil, typenames[1], typenames[2], nil}
       @dihedrals.each do |key, dihedral_t|
-        return dihedral_t.view if key == typenames
+        return dihedral_t if key == typenames
       end
     end
   end
 
-  def dihedral?(typenames : {Nil, String, String, Nil}) : Array::View(DihedralType)?
-    @dihedrals[typenames]?.try &.view
+  def dihedrals : Array::View(DihedralType)
+    @dihedrals.values.uniq!.view
   end
 
-  def dihedrals : Array::View(Array::View(DihedralType))
-    @dihedrals.values.uniq!.map(&.view).view
-  end
-
-  def improper?(typenames : {String, String, String, String}) : ImproperType?
+  def improper?(typenames : {String, String?, String?, String}) : ImproperType?
     if improper_t = @impropers[typenames]?
       improper_t
     else

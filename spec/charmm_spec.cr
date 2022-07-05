@@ -58,31 +58,27 @@ describe MM::CHARMM do
 
       params.dihedrals.size.should eq 817
 
-      dihedrals = params.dihedral?({nil, "C145", "C145", nil}).should_not be_nil
-      dihedrals.size.should eq 1
-      dihedrals[0].force_constant.should eq 3.625
-      dihedrals[0].multiplicity.should eq 2
-      dihedrals[0].eq_value.should eq 180
-      dihedrals[0].penalty.should eq 0.0
-      dihedrals[0].comment.should be_nil
+      dihedral_t = params.dihedral?({nil, "C145", "C145", nil}).should_not be_nil
+      dihedral_t.phases.size.should eq 1
+      dihedral_t.phases[0].force_constant.should eq 3.625
+      dihedral_t.phases[0].multiplicity.should eq 2
+      dihedral_t.phases[0].eq_value.should eq 180
+      dihedral_t.penalty.should eq 0.0
+      dihedral_t.comment.should be_nil
 
-      dihedrals = params.dihedral?({"C505", "C224", "C235", "N238"}).should_not be_nil
-      dihedrals.size.should eq 3
-      dihedrals[0].force_constant.should eq 0.8895
-      dihedrals[0].multiplicity.should eq 1
-      dihedrals[0].eq_value.should eq 0
-      dihedrals[0].penalty.should eq 0.0
-      dihedrals[0].comment.should be_nil
-      dihedrals[1].force_constant.should eq 0.2095
-      dihedrals[1].multiplicity.should eq 2
-      dihedrals[1].eq_value.should eq 180
-      dihedrals[1].penalty.should eq 0.0
-      dihedrals[1].comment.should be_nil
-      dihedrals[2].force_constant.should eq -0.0550
-      dihedrals[2].multiplicity.should eq 3
-      dihedrals[2].eq_value.should eq 0
-      dihedrals[2].penalty.should eq 0.0
-      dihedrals[2].comment.should be_nil
+      dihedral_t = params.dihedral?({"C505", "C224", "C235", "N238"}).should_not be_nil
+      dihedral_t.phases.size.should eq 3
+      dihedral_t.phases[0].force_constant.should eq 0.8895
+      dihedral_t.phases[0].multiplicity.should eq 1
+      dihedral_t.phases[0].eq_value.should eq 0
+      dihedral_t.phases[1].force_constant.should eq 0.2095
+      dihedral_t.phases[1].multiplicity.should eq 2
+      dihedral_t.phases[1].eq_value.should eq 180
+      dihedral_t.phases[2].force_constant.should eq -0.0550
+      dihedral_t.phases[2].multiplicity.should eq 3
+      dihedral_t.phases[2].eq_value.should eq 0
+      dihedral_t.penalty.should eq 0.0
+      dihedral_t.comment.should be_nil
 
       params.impropers.size.should eq 54 # unique, 105 in total
 
@@ -133,10 +129,12 @@ describe MM::CHARMM do
         comment: "tetrahedral C (proline CA)")
       params << MM::BondType.new({"C", "CP1"}, 250.0, 1.49, 264.5, "ALLOW PRO")
       params << MM::AngleType.new({"C", "CP1", "H"}, 50, 111)
-      params << MM::DihedralType.new({nil, "CP1", "CP1", nil}, 2, 3.625, 180)
-      params << MM::DihedralType.new({"C", "CP1", "H", "C"}, 1, 0.65, 0)
-      params << MM::DihedralType.new({"C", "CP1", "H", "C"}, 2, -0.1, 180)
-      params << MM::DihedralType.new({"C", "CP1", "H", "C"}, 3, 0.1, 0)
+      params << MM::DihedralType.new({nil, "CP1", "CP1", nil}, [MM::Phase.new(3.625, 2, 180)])
+      params << MM::DihedralType.new({"C", "CP1", "H", "C"}, [
+        MM::Phase.new(0.65, 1, 0),
+        MM::Phase.new(-0.1, 2, 180),
+        MM::Phase.new(0.1, 3, 0),
+      ])
       params << MM::ImproperType.new({"C", "CP1", "C", "H"}, 1.1, 180)
 
       io = IO::Memory.new

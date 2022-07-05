@@ -13,8 +13,8 @@ conns.each do |conn|
     missing_params << param.copy_with(typenames: conn.atoms.map(&.typename.not_nil!))
   when {MM::AngleType, Chem::Angle}
     missing_params << param.copy_with(typenames: conn.atoms.map(&.typename.not_nil!))
-  when {Enumerable(MM::DihedralType), Chem::Dihedral}
-    missing_params << param.map(&.copy_with(typenames: conn.atoms.map(&.typename.not_nil!)))
+  when {MM::DihedralType, Chem::Dihedral}
+    missing_params << param.copy_with(typenames: conn.atoms.map(&.typename.not_nil!))
   when {MM::ImproperType, Chem::Improper}
     missing_params << param.copy_with(typenames: conn.atoms.map(&.typename.not_nil!))
   end

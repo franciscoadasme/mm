@@ -8,27 +8,27 @@ describe MM::ParameterSet do
 
       bond = topology.bonds[0]
       typenames = bond.atoms.map(&.typename.not_nil!)
-      bond_type = MM::BondType.new(typenames, 340, 1.09)
-      params << bond_type
-      params[bond]?.should eq bond_type
+      bond_t = MM::BondType.new(typenames, 340, 1.09)
+      params << bond_t
+      params[bond]?.should eq bond_t
 
       angle = topology.angles[0]
       typenames = angle.atoms.map(&.typename.not_nil!)
-      angle_type = MM::AngleType.new(typenames, 340, 1.09)
-      params << angle_type
-      params[angle]?.should eq angle_type
+      angle_t = MM::AngleType.new(typenames, 340, 1.09)
+      params << angle_t
+      params[angle]?.should eq angle_t
 
       dihedral = topology.dihedrals[0]
       typenames = dihedral.atoms.map(&.typename.not_nil!)
-      dihedral_type = MM::DihedralType.new(typenames, 2, 340, 1.09)
-      params << dihedral_type
-      params[dihedral]?.should eq [dihedral_type]
+      dihedral_t = MM::DihedralType.new(typenames, [MM::Phase.new(340, 2, 1.09)])
+      params << dihedral_t
+      params[dihedral]?.should eq dihedral_t
 
       improper = topology.impropers[0]
       typenames = improper.atoms.map(&.typename.not_nil!)
-      improper_type = MM::ImproperType.new(typenames, 340, 1.09)
-      params << improper_type
-      params[improper]?.should eq improper_type
+      improper_t = MM::ImproperType.new(typenames, 340, 1.09)
+      params << improper_t
+      params[improper]?.should eq improper_t
     end
   end
 
@@ -52,17 +52,18 @@ describe MM::ParameterSet do
     end
 
     it "appends a dihedral" do
-      dihedral2 = MM::DihedralType.new({"A", "B", "C", "D"}, 2, 1.1, 180)
-      dihedral3 = MM::DihedralType.new({"A", "B", "C", "D"}, 3, 1.1, 0.0)
+      dihedral_t = MM::DihedralType.new({"A", "B", "C", "D"}, [
+        MM::Phase.new(1.1, 2, 180), MM::Phase.new(1.1, 3, 0.0),
+      ])
 
       params = MM::ParameterSet.new
-      params << dihedral2
+      params << dihedral_t
       params.dihedrals.size.should eq 1
-      params.dihedrals[0].should eq [dihedral2]
+      params.dihedrals[0].should eq dihedral_t
 
-      params << dihedral3
+      params << dihedral_t
       params.dihedrals.size.should eq 1
-      params.dihedrals[0].should eq [dihedral2, dihedral3]
+      params.dihedrals[0].should eq dihedral_t
     end
 
     it "appends an improper" do
@@ -76,7 +77,7 @@ describe MM::ParameterSet do
 
     it "appends an array of dihedrals (#1)" do
       params = MM::ParameterSet.new
-      params << [MM::DihedralType.new({"A", "B", "C", "D"}, 2, 1.1, 180)]
+      params << MM::DihedralType.new({"A", "B", "C", "D"}, [MM::Phase.new(1.1, 2, 180)])
       params.dihedrals.size.should eq 1
       params << params.dihedrals[0]
       params.dihedrals.size.should eq 1
@@ -134,7 +135,7 @@ describe MM::ParameterSet do
       dihedral_types = params.fuzzy_search(dihedral)
       dihedral_types.should_not be_empty
       dihedral_types.size.should eq 1
-      dihedral_types[0][0].typenames.should eq({"C136", "C224", "C235", "O236"})
+      dihedral_types[0].typenames.should eq({"C136", "C224", "C235", "O236"})
     end
 
     it "searches for a reversed dihedral" do
@@ -146,17 +147,17 @@ describe MM::ParameterSet do
       dihedral_types = params.fuzzy_search(dihedral)
       dihedral_types.should_not be_empty
       dihedral_types.size.should eq 1
-      dihedral_types[0][0].typenames.should eq({"C235", "C224", "C136", "H140"})
+      dihedral_types[0].typenames.should eq({"C235", "C224", "C136", "H140"})
     end
   end
 
   describe "#dihedral?" do
     it "returns a dihedral with wildcards" do
-      dihedral_t = MM::DihedralType.new({nil, "B", "C", nil}, 2, 1.1, 180)
+      dihedral_t = MM::DihedralType.new({nil, "B", "C", nil}, [MM::Phase.new(1.1, 2, 180)])
       params = MM::ParameterSet.new
       params << dihedral_t
-      params.dihedral?({"A", "B", "C", "D"}).should eq [dihedral_t]
-      params.dihedral?({"Y", "B", "C", "Z"}).should eq [dihedral_t]
+      params.dihedral?({"A", "B", "C", "D"}).should eq dihedral_t
+      params.dihedral?({"Y", "B", "C", "Z"}).should eq dihedral_t
     end
   end
 

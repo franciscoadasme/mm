@@ -61,10 +61,17 @@ module MM::CHARMM
           type3 = tokens[2].upcase
           type4 = tokens[3].upcase
           type4 = nil if type4 == WILDCARD_TYPE_NAME
+          typenames = {type1, type2, type3, type4}
           force_constant = tokens[4].to_f? || raise "Invalid force constant"
           multiplicity = tokens[5].to_i? || raise "Invalid multiplicity"
           eq_value = tokens[6].to_f? || raise "Invalid equilibrium value"
-          params << DihedralType.new({type1, type2, type3, type4}, multiplicity, force_constant, eq_value, penalty, comment)
+          phase = Phase.new(force_constant, multiplicity, eq_value)
+          if dihedral_t = params.dihedral?(typenames)
+            phases = dihedral_t.phases.to_a + [phase]
+          else
+            phases = [phase]
+          end
+          params << DihedralType.new(typenames, phases, penalty, comment)
         when {"impropers", _}
           type1 = tokens[0].upcase
           type2 = tokens[1].upcase
@@ -238,11 +245,12 @@ module MM::CHARMM
     io.puts
 
     io.puts "DIHEDRALS"
-    params.dihedrals.to_a.sort_by!(&.first).each do |dihedral_types|
-      dihedral_types.each do |tor|
+    params.dihedrals.to_a.sort!.each do |dihedral_t|
+      typenames = dihedral_t.typenames.map { |x| x || 'X' }
+      dihedral_t.phases.each do |phase|
         io.printf "%-6s%-6s%-6s%-6s%11.4f%2d%8.2f",
-          *tor.typenames.map { |x| x || 'X' }, tor.force_constant, tor.multiplicity, tor.eq_value
-        write_parameter_comment io, tor
+          *typenames, phase.force_constant, phase.multiplicity, phase.eq_value
+        write_parameter_comment io, dihedral_t
         io.puts
       end
     end

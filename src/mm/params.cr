@@ -5,17 +5,15 @@ module MM
     penalty : Float64 = 0.0,
     comment : String? = nil
 
+  record Phase, force_constant : Float64, multiplicity : Int32, eq_value : Float64
+
   abstract struct ParameterType(*T)
-    getter force_constant : Float64
-    getter eq_value : Float64
     getter penalty : Float64 = 0.0
     getter comment : String?
     getter typenames : Tuple(*T)
 
     def initialize(
       @typenames : Tuple(*T),
-      @force_constant : Float64,
-      @eq_value : Float64,
       @penalty : Float64 = 0.0,
       @comment : String? = nil
     )
@@ -23,13 +21,6 @@ module MM
 
     def <=>(rhs : self) : Int32
       @typenames.map { |name| name || " " } <=> rhs.typenames.map { |name| name || " " }
-    end
-
-    def ==(rhs : self) : Bool
-      self == rhs.typenames &&
-        @force_constant == rhs.force_constant &&
-        @eq_value == rhs.eq_value &&
-        @penalty == rhs.penalty
     end
 
     def ==(typenames : Tuple(*T)) : Bool
@@ -48,14 +39,8 @@ module MM
     end
 
     # Returns a copy but changing the given values.
-    def copy_with(
-      typenames : Tuple(*T) = @typenames,
-      force_constant : Float64 = @force_constant,
-      eq_value : Float64 = @eq_value,
-      penalty : Float64 = @penalty,
-      comment : String? = @comment
-    )
-      self.class.new typenames, force_constant, eq_value, penalty, comment
+    def copy_with(typenames : Tuple(*T)) : self
+      self.class.new typenames, @penalty, @comment
     end
 
     def each_typename_permutation(& : Tuple(*T) ->) : Nil
@@ -72,18 +57,12 @@ module MM
     end
   end
 
-  struct BondType < ParameterType(String, String)
-  end
-
-  struct AngleType < ParameterType(String, String, String)
-  end
-
-  struct DihedralType < ParameterType(String?, String, String, String?)
-    getter multiplicity : Int32
+  abstract struct SimpleParameterType(*T) < ParameterType(*T)
+    getter force_constant : Float64
+    getter eq_value : Float64
 
     def initialize(
-      @typenames : Tuple(String?, String, String, String?),
-      @multiplicity : Int32,
+      @typenames : Tuple(*T),
       @force_constant : Float64,
       @eq_value : Float64,
       @penalty : Float64 = 0.0,
@@ -91,15 +70,35 @@ module MM
     )
     end
 
-    def copy_with(
-      typenames : Tuple(*T) = @typenames,
-      multiplicity : Int32 = @multiplicity,
-      force_constant : Float64 = @force_constant,
-      eq_value : Float64 = @eq_value,
-      penalty : Float64 = @penalty,
-      comment : String? = @comment
-    ) : self
-      self.class.new typenames, multiplicity, force_constant, eq_value, penalty, comment
+    def ==(rhs : self) : Bool
+      self == rhs.typenames &&
+        @force_constant == rhs.force_constant &&
+        @eq_value == rhs.eq_value
+    end
+
+    # Returns a copy but changing the given values.
+    def copy_with(typenames : Tuple(*T))
+      self.class.new typenames, @force_constant, @eq_value, @penalty, @comment
+    end
+  end
+
+  struct BondType < SimpleParameterType(String, String)
+  end
+
+  struct AngleType < SimpleParameterType(String, String, String)
+  end
+
+  struct DihedralType < ParameterType(String?, String, String, String?)
+    def initialize(
+      @typenames : Tuple(String?, String, String, String?),
+      @phases : Array(Phase),
+      @penalty : Float64 = 0.0,
+      @comment : String? = nil
+    )
+    end
+
+    def ==(rhs : self) : Bool
+      self == rhs.typenames && rhs.phases.equals?(@phases) { |x, y| x == y }
     end
 
     def ===(typenames : Tuple(String?, String, String, String?)) : Bool
@@ -110,9 +109,17 @@ module MM
         super
       end
     end
+
+    def copy_with(typenames : Tuple(*T)) : self
+      self.class.new typenames, @phases.dup, @penalty, @comment
+    end
+
+    def phases : Array::View(Phase)
+      @phases.view
+    end
   end
 
-  struct ImproperType < ParameterType(String, String?, String?, String)
+  struct ImproperType < SimpleParameterType(String, String?, String?, String)
     def ==(typenames : Tuple(String, String?, String?, String)) : Bool
       @typenames == typenames
     end
