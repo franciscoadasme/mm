@@ -7,25 +7,25 @@ describe MM::ParameterSet do
       params = MM::ParameterSet.new
 
       bond = topology.bonds[0]
-      typenames = bond.atoms.map(&.type.not_nil!)
+      typenames = bond.atoms.map(&.typename.not_nil!)
       bond_type = MM::BondType.new(typenames, 340, 1.09)
       params << bond_type
       params[bond]?.should eq bond_type
 
       angle = topology.angles[0]
-      typenames = angle.atoms.map(&.type.not_nil!)
+      typenames = angle.atoms.map(&.typename.not_nil!)
       angle_type = MM::AngleType.new(typenames, 340, 1.09)
       params << angle_type
       params[angle]?.should eq angle_type
 
       dihedral = topology.dihedrals[0]
-      typenames = dihedral.atoms.map(&.type.not_nil!)
+      typenames = dihedral.atoms.map(&.typename.not_nil!)
       dihedral_type = MM::DihedralType.new(typenames, 2, 340, 1.09)
       params << dihedral_type
       params[dihedral]?.should eq [dihedral_type]
 
       improper = topology.impropers[0]
-      typenames = improper.atoms.map(&.type.not_nil!)
+      typenames = improper.atoms.map(&.typename.not_nil!)
       improper_type = MM::ImproperType.new(typenames, 340, 1.09)
       params << improper_type
       params[improper]?.should eq improper_type
@@ -89,7 +89,7 @@ describe MM::ParameterSet do
       params = MM::ParameterSet.from_charmm(
         "spec/data/top_opls_aam_M.inp",
         "spec/data/par_opls_aam_M.inp")
-      params.detect_missing(topology).map(&.atoms.map(&.type)).should eq [
+      params.detect_missing(topology).map(&.atoms.map(&.typename)).should eq [
         {"C136", "C224", "C267"},
         {"C137", "C224", "C267"},
         {"C149", "C224", "C267"},
@@ -118,7 +118,7 @@ describe MM::ParameterSet do
       params = MM::ParameterSet.from_charmm(
         "spec/data/top_opls_aam_M.inp",
         "spec/data/par_opls_aam_M.inp")
-      angle = Chem::Angle[*topology.atoms[{10, 8, 28}]]
+      angle = Chem::Angle.new *topology.atoms[{10, 8, 28}]
       angle_types = params.fuzzy_search(angle)
       angle_types.should_not be_empty
       angle_types.size.should eq 1
@@ -130,7 +130,7 @@ describe MM::ParameterSet do
       params = MM::ParameterSet.from_charmm(
         "spec/data/top_opls_aam_M.inp",
         "spec/data/par_opls_aam_M.inp")
-      dihedral = Chem::Dihedral[*topology.atoms[{10, 8, 28, 30}]]
+      dihedral = Chem::Dihedral.new *topology.atoms[{10, 8, 28, 30}]
       dihedral_types = params.fuzzy_search(dihedral)
       dihedral_types.should_not be_empty
       dihedral_types.size.should eq 1
@@ -142,7 +142,7 @@ describe MM::ParameterSet do
       params = MM::ParameterSet.from_charmm(
         "spec/data/top_opls_aam_M.inp",
         "spec/data/par_opls_aam_M.inp")
-      dihedral = Chem::Dihedral[*topology.atoms[{11, 10, 8, 28}]]
+      dihedral = Chem::Dihedral.new *topology.atoms[{11, 10, 8, 28}]
       dihedral_types = params.fuzzy_search(dihedral)
       dihedral_types.should_not be_empty
       dihedral_types.size.should eq 1

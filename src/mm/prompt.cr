@@ -8,7 +8,7 @@ module MM
       printf "Missing %s between %s [%s]\n",
         conn.class.name.split("::").last.underscore.split('_').first,
         conn.atoms.join(", "),
-        conn.atoms.join('-', &.type),
+        conn.atoms.join('-', &.typename),
 
       matching_params = params.fuzzy_search(conn)
       case matching_params.size

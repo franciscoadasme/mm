@@ -75,14 +75,14 @@ class MM::ParameterSet
       # assigned type (`nil`).
       def []?({{name.id}} : Chem::{{name.id.camelcase}}) : {{return_type.id}}?
         typenames = {{name.id}}.atoms.map { |atom|
-          atom.type || raise ArgumentError.new("#{atom} has no type")
+          atom.typename || raise ArgumentError.new("#{atom} has no type")
         }
         {{name.id}}? typenames
       end
 
       def fuzzy_search({{name.id}} : Chem::{{name.id.camelcase}}) : Array({{return_type.id}})
         pattern = {{name.id}}.atoms.map do |atom|
-          typename = atom.type || raise ArgumentError.new("#{atom} has no type")
+          typename = atom.typename || raise ArgumentError.new("#{atom} has no type")
           atom_type = atom?(typename) || raise KeyError.new("Unknown atom type #{typename}")
           resname = atom.residue.name
           restype = residue?(resname) || raise KeyError.new("Unknown residue type #{resname}")
@@ -143,7 +143,7 @@ class MM::ParameterSet
     {% for name in %w(bond angle dihedral improper) %}
       top.{{name.id}}s.each do |{{name.id}}|
         next if self[{{name.id}}]?
-        key = {{name.id}}.atoms.join('-', &.type)
+        key = {{name.id}}.atoms.join('-', &.typename)
         missing_params[key] ||= {{name.id}}
       end
     {% end %}
