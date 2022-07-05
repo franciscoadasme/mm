@@ -1,17 +1,13 @@
 class MM::ParameterSet
-  alias BondKey = {String, String}
-  alias AngleKey = {String, String, String}
-  alias DihedralKey = {String?, String, String, String?}
-  alias ImproperKey = {String, String?, String?, String}
   alias C = Chem::Bond | Chem::Angle | Chem::Dihedral | Chem::Improper
 
-  @angles = [] of AngleType
-  @atoms = [] of AtomType
-  @bonds = [] of BondType
-  @dihedrals = [] of Array(DihedralType)
-  @impropers = [] of ImproperType
-  @patches = [] of Patch
-  @residues = [] of ResidueType
+  @angles = {} of {String, String, String} => AngleType
+  @atoms = {} of String => AtomType
+  @bonds = {} of {String, String} => BondType
+  @dihedrals = {} of {String?, String, String, String?} => Array(DihedralType)
+  @impropers = {} of {String, String?, String?, String} => ImproperType
+  @patches = {} of String => Patch
+  @residues = {} of String => ResidueType
 
   def self.from_charmm(*paths : Path | String) : self
     params = new
@@ -43,20 +39,18 @@ class MM::ParameterSet
     {% key = %w(atom patch residue).includes?(name) ? "name" : "typenames" %}
     {% return_type = name == "dihedral" ? "Array::View(#{type.id})" : type %}
 
-    def {{plural_name.id}} : Array::View({{return_type.id}})
-      @{{plural_name.id}}.view
-    end
-
-    def <<({{name.id}}_t : {{type.id}}) : self
-      if i = @{{plural_name.id}}.index(&.==({{name.id}}_t.{{key.id}}))
-        @{{plural_name.id}}[i] = {{name.id}}_t
-      else
-        @{{plural_name.id}} << {{name.id}}_t
-      end
-      self
+    def {{plural_name.id}} : Array::View
+      @{{plural_name.id}}.values.uniq!.view
     end
 
     {% if %w(angle bond dihedral improper).includes?(name) %}
+      def <<({{name.id}}_t : {{type.id}}) : self
+        {{name.id}}_t.each_typename_permutation do |typenames|
+          @{{plural_name.id}}[typenames] = {{name.id}}_t
+        end
+        self
+      end
+
       # Returns the {{name.id}} parameter type associated with *{{name.id}}*.
       # Raises `KeyError` if the parameter does not exists.
       #
@@ -93,8 +87,9 @@ class MM::ParameterSet
           end
         end
 
-        @{{name.id}}s.select do |{{name.id}}|
-          {{name.id}}{% if name == "dihedral" %}[0]{% end %}.typename_permutations.any? do |typenames|
+        {{name.id}}_types = Set({{return_type.id}}).new
+        @{{plural_name.id}}.each_value do |{{name.id}}_t|
+          matches = {{name.id}}_t{% if name == "dihedral" %}[0]{% end %}.typename_permutations.any? do |typenames|
             typenames.zip(pattern).all? { |typename, atom_pattern|
               if atom_type = typename.try { |typename| atom?(typename) }
                 atom_type.matches?(atom_pattern)
@@ -103,39 +98,47 @@ class MM::ParameterSet
               end
             }
           end
-        end{% if name == "dihedral" %}.map(&.view){% end %}
+          {{name.id}}_types << {{name.id}}_t{% if name == "dihedral" %}.view{% end %} if matches
+        end
+        {{name.id}}_types.to_a.sort!
+      end
+    {% else %}
+      def <<({{name.id}} : {{type.id}}) : self
+        @{{plural_name.id}}[{{name.id}}.name] = {{name.id}}
+        self
       end
     {% end %}
   {% end %}
 
   def <<(dihedral_t : DihedralType) : self
-    if i = @dihedrals.index(&.[0].==(dihedral_t.typenames))
-      @dihedrals[i] << dihedral_t
-    else
-      @dihedrals << [dihedral_t]
+    dihedral_t.each_typename_permutation do |typenames|
+      @dihedrals[typenames] ||= [] of DihedralType
+      @dihedrals[typenames] << dihedral_t unless dihedral_t.in?(@dihedrals[typenames])
     end
     self
   end
 
-  def <<(dihedral_types : Enumerable(DihedralType)) : self
-    if i = @dihedrals.index(&.[0].==(dihedral_types[0].typenames))
-      @dihedrals[i] = dihedral_types.to_a
-    else
-      @dihedrals << dihedral_types.to_a
+  def <<(dihedral_types : Indexable(DihedralType)) : self
+    size = dihedral_types.size
+    dihedral_types[0].each_typename_permutation do |typenames|
+      @dihedrals[typenames] ||= [] of DihedralType
+      dihedral_types.each(within: ...size) do |dihedral_t|
+        @dihedrals[typenames] << dihedral_t
+      end
     end
     self
   end
 
   def angle?(typenames : {String, String, String}) : AngleType?
-    @angles.find &.===(typenames)
+    @angles[typenames]?
   end
 
   def atom?(name : String) : AtomType?
-    @atoms.find &.name.==(name.upcase)
+    @atoms[name.upcase]?
   end
 
   def bond?(typenames : {String, String}) : BondType?
-    @bonds.find &.===(typenames)
+    @bonds[typenames]?
   end
 
   def detect_missing(top : Chem::Topology) : Array(C)
@@ -150,24 +153,42 @@ class MM::ParameterSet
     missing_params.values
   end
 
-  def dihedral?(typenames : {String?, String, String, String?}) : Array::View(DihedralType)?
-    @dihedrals.find(&.first.===(typenames)).try(&.view)
+  def dihedral?(typenames : {String, String, String, String}) : Array::View(DihedralType)?
+    if dihedral_t = @dihedrals[typenames]?
+      dihedral_t.view
+    else
+      typenames = {nil, typenames[1], typenames[2], nil}
+      @dihedrals.each do |key, dihedral_t|
+        return dihedral_t.view if key == typenames
+      end
+    end
+  end
+
+  def dihedral?(typenames : {Nil, String, String, Nil}) : Array::View(DihedralType)?
+    @dihedrals[typenames]?.try &.view
   end
 
   def dihedrals : Array::View(Array::View(DihedralType))
-    @dihedrals.map(&.view).view
+    @dihedrals.values.uniq!.map(&.view).view
   end
 
-  def improper?(typenames : {String, String?, String?, String}) : ImproperType?
-    @impropers.find &.===(typenames)
+  def improper?(typenames : {String, String, String, String}) : ImproperType?
+    if improper_t = @impropers[typenames]?
+      improper_t
+    else
+      typenames = {typenames[0], nil, nil, typenames[3]}
+      @impropers.each do |key, improper_t|
+        return improper_t if key == typenames
+      end
+    end
   end
 
   def patch?(name : String) : Patch?
-    @patches.find &.name.==(name.upcase)
+    @patches[name.upcase]?
   end
 
   def residue?(name : String) : ResidueType?
-    @residues.find &.name.==(name.upcase)
+    @residues[name.upcase]?
   end
 
   def to_prm(output : IO | Path | String) : Nil

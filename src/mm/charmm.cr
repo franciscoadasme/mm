@@ -263,7 +263,7 @@ module MM::CHARMM
              cutnb 14.0 ctofnb 12.0 ctonnb 10.0 eps 1.0 e14fac #{1/scee} \
              wmin 1.5#{comb_rule}"
     io.puts
-    params.atoms.each do |atom_t|
+    params.atoms.to_a.sort!.each do |atom_t|
       next unless lj = atom_t.lj
       io.printf "%-6s%6.2f%10.6f%14.6f",
         atom_t.name, 0, lj.epsilon, lj.rmin * 0.5
